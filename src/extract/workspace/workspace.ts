@@ -232,6 +232,9 @@ export function createWorkspace(): Workspace {
   let toastTimer: ReturnType<typeof setTimeout> | undefined;
   function toast(msg: string, isError = false) {
     const el = $('toast');
+    // Errors interrupt a screen reader (alert); other toasts wait for a pause (status).
+    el.setAttribute('role', isError ? 'alert' : 'status');
+    el.setAttribute('aria-live', isError ? 'assertive' : 'polite');
     el.textContent = msg;
     el.classList.toggle('error', isError);
     el.hidden = false;

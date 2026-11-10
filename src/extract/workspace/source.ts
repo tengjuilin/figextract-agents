@@ -129,8 +129,8 @@ export function setupWorkspaceSource(w: WorkspaceContext): SourceMembers {
     // Page controls also work for a reopened project that has several page images but no PDF.
     const isPdf = !!app.pdfDoc || s.pageCount > 1;
     $('pdf-controls').hidden = !isPdf;
-    // The page number is already in the page controls next to it.
-    $('source-info').textContent = `${s.fileName} · ${s.width} × ${s.height} px`;
+    // The file name is in the top bar and the page number in the page controls next to it; only the size here.
+    $('source-info').textContent = `${s.width} × ${s.height} px`;
     if (isPdf) {
       $('page-input').max = String(s.pageCount);
       w.setValue($('page-input'), s.page);
@@ -295,9 +295,15 @@ export function setupWorkspaceSource(w: WorkspaceContext): SourceMembers {
     });
   }
 
-  // The whole dashed drop area opens the file dialog; the button inside already does.
-  $('dropzone').addEventListener('click', (e) => {
-    if (!(e.target as HTMLElement).closest('label')) $('file-input-2').click();
+  // The file pickers are buttons (focusable, unlike a <label> around the input) that open the hidden input.
+  $('btn-open').addEventListener('click', () => $('file-input').click());
+  // The whole dashed drop area opens the file dialog, its Choose file… button included (the click bubbles up).
+  // It is role="button" with tabindex 0, so Enter and Space open it too.
+  $('dropzone').addEventListener('click', () => $('file-input-2').click());
+  $('dropzone').addEventListener('keydown', (e) => {
+    if (e.target !== e.currentTarget || (e.key !== 'Enter' && e.key !== ' ')) return;
+    e.preventDefault(); // Space would scroll
+    $('file-input-2').click();
   });
 
   // Example files ship with the app. fetch() fails on file://, so say how to run it.

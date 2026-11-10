@@ -33,8 +33,9 @@ function showStartupError(err: unknown) {
   console.error(err);
   const el = document.createElement('div');
   el.setAttribute('role', 'alert');
+  // Tokens from base.css, with fallbacks in case the stylesheet is what failed to load.
   el.style.cssText =
-    'position:fixed;top:0;left:0;right:0;z-index:99;padding:10px 14px;background:#b3261e;color:#fff;font:14px system-ui,sans-serif';
+    'position:fixed;top:0;left:0;right:0;z-index:var(--z-alert,99);padding:10px 14px;background:var(--danger,#b3261e);color:var(--danger-contrast,#fff);font:var(--fs-base,14px) var(--font,system-ui,sans-serif)';
   el.textContent = `FigExtract Agents could not start (${(err as Error)?.message || err}). Try a hard refresh (Ctrl+Shift+R). If it persists, report the first error in the browser console.`;
   document.body.prepend(el);
 }

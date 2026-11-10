@@ -28,9 +28,6 @@
   flex-direction: column;
   gap: 10px;
 }
-.card[hidden] {
-  display: none;
-}
 .card-head {
   display: flex;
   align-items: center;
@@ -57,7 +54,7 @@
 }
 .help p {
   margin: 6px 0 2px;
-  font-size: 12px;
+  font-size: var(--fs-sm);
 }
 
 .step-dot {
@@ -74,55 +71,38 @@
 }
 
 .badge {
-  font-size: 11px;
+  font-size: var(--fs-xs);
   padding: 2px 8px;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: var(--surface-2);
   color: var(--muted);
 }
 .badge.ok {
-  background: #dff5e6;
-  color: #146c2e;
+  background: var(--good-bg);
+  color: var(--good-text);
 }
 .badge.todo {
   background: var(--warn-bg);
   color: var(--warn-text);
-}
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) .badge.ok {
-    background: #183a24;
-    color: #8be0a6;
-  }
-}
-:root[data-theme="dark"] .badge.ok {
-  background: #183a24;
-  color: #8be0a6;
-}
-
-.other-pages {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 6px;
 }
 
 .bar-strip {
   width: 100%;
   height: 28px;
   border: 1px solid var(--border);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   background: var(--surface-2);
 }
 
 table.ticks {
   width: 100%;
   border-collapse: collapse;
-  font-size: 13px;
+  font-size: var(--fs-md);
 }
 table.ticks th {
   text-align: left;
   font-weight: 500;
-  font-size: 12px;
+  font-size: var(--fs-sm);
   color: var(--muted);
   padding: 2px 4px;
 }
@@ -131,7 +111,7 @@ table.ticks td {
 }
 table.ticks td.pos {
   font-family: var(--mono);
-  font-size: 12px;
+  font-size: var(--fs-sm);
   color: var(--muted);
   white-space: nowrap;
 }
@@ -145,15 +125,12 @@ table.ticks td.pos input {
 table.ticks tr.invalid input {
   border-color: var(--danger);
 }
-table.ticks[hidden] {
-  display: none;
-}
 
 .table-wrap {
   overflow: auto;
   max-height: 360px;
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: var(--radius-md);
 }
 .table-wrap:has(table:empty) {
   display: none;
@@ -161,7 +138,7 @@ table.ticks[hidden] {
 .result-table {
   border-collapse: collapse;
   font-family: var(--mono);
-  font-size: 11.5px;
+  font-size: var(--fs-xs);
 }
 .result-table th {
   position: sticky;
@@ -171,16 +148,17 @@ table.ticks[hidden] {
   padding: 3px 6px;
   text-align: center;
   white-space: nowrap;
-  z-index: 1;
+  z-index: var(--z-sticky);
 }
+/* Row heads stick on top of the column heads they scroll under; the corner on top of both. */
 .result-table th.rowhead {
   position: sticky;
   left: 0;
   text-align: left;
-  z-index: 2;
+  z-index: calc(var(--z-sticky) + 1);
 }
 .result-table thead th.rowhead {
-  z-index: 3;
+  z-index: calc(var(--z-sticky) + 2);
 }
 .result-table td {
   padding: 3px 6px;
@@ -252,14 +230,11 @@ table.ticks[hidden] {
   place-items: center;
   padding: 16px;
 }
-.empty-state[hidden] {
-  display: none;
-}
 .empty-card {
   text-align: center;
   background: var(--surface);
   border: 2px dashed var(--border);
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   padding: 28px 32px;
   max-width: 420px;
 }
@@ -289,7 +264,7 @@ table.ticks[hidden] {
   width: 48px;
   height: 48px;
   margin: 0 auto 10px;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   background:
     linear-gradient(
       90deg,
@@ -306,24 +281,21 @@ table.ticks[hidden] {
       var(--surface) 66% 68%,
       transparent 68%
     ),
-    conic-gradient(#dfe3ff 0 25%, #5560f0 0 50%, #a3a9ff 0 75%, #2530e0 0);
+    conic-gradient(from -90deg, var(--brand-1) 0 25%, var(--brand-2) 0 50%, var(--brand-3) 0 75%, var(--brand-4) 0);
 }
 
 .drop-overlay {
   position: absolute;
   inset: 8px;
   border: 3px dashed var(--accent);
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   background: color-mix(in srgb, var(--accent) 12%, transparent);
   display: grid;
   place-items: center;
-  font-size: 18px;
+  font-size: var(--fs-lg);
   font-weight: 600;
   color: var(--text);
   pointer-events: none;
-}
-.drop-overlay[hidden] {
-  display: none;
 }
 
 .modebar {
@@ -338,15 +310,16 @@ table.ticks[hidden] {
   padding: 6px 8px 6px 14px;
   background: var(--text);
   color: var(--bg);
-  border-radius: 999px;
+  /* Not a pill: long instructions wrap to two lines on a narrow stage. */
+  border-radius: var(--radius-lg);
   box-shadow: var(--shadow);
-  font-size: 13px;
-}
-.modebar[hidden] {
-  display: none;
+  font-size: var(--fs-md);
 }
 .modebar .btn {
-  border-radius: 999px;
+  height: var(--control-h-sm);
+  min-height: var(--control-h-sm);
+  padding: 0 10px;
+  font-size: var(--fs-sm);
 }
 
 /* Source, page and zoom controls, one row above the status bar */
@@ -358,14 +331,10 @@ table.ticks[hidden] {
   padding: 4px 12px;
   background: var(--surface);
   border-top: 1px solid var(--border);
-  font-size: 12px;
+  font-size: var(--fs-sm);
   /* Wraps by its own width, not the window's: the sidebar takes part of the screen. */
   flex-wrap: wrap;
   row-gap: 6px;
-}
-.viewbar[hidden],
-.viewbar-group[hidden] {
-  display: none;
 }
 /* Groups never shrink or wrap inside, so "of 26" stays on one line. */
 .viewbar-group {
@@ -386,13 +355,7 @@ table.ticks[hidden] {
   min-height: var(--control-h-sm);
   font-size: var(--fs-sm);
 }
-.viewbar .btn.icon {
-  min-width: var(--control-h-sm);
-  padding: 0 6px;
-  font-size: 15px;
-  line-height: 1;
-}
-.viewbar .btn.small {
+.viewbar .btn:not(.icon-only) {
   padding: 0 10px;
 }
 .viewbar input.num {
@@ -412,7 +375,7 @@ table.ticks[hidden] {
   min-height: var(--control-h-sm);
   padding: 2px 4px;
   text-align: center;
-  font-size: 12px;
+  font-size: var(--fs-sm);
   font-family: var(--mono);
   font-variant-numeric: tabular-nums;
 }
@@ -434,7 +397,7 @@ table.ticks[hidden] {
   background: var(--surface);
   border-top: 1px solid var(--border);
   font-family: var(--mono);
-  font-size: 12px;
+  font-size: var(--fs-sm);
   color: var(--muted);
   white-space: nowrap;
   overflow: hidden;
@@ -442,36 +405,32 @@ table.ticks[hidden] {
 .swatch {
   width: 14px;
   height: 14px;
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
   border: 1px solid var(--border);
   display: inline-block;
-}
-.swatch[hidden] {
-  display: none;
 }
 #status-cell {
   color: var(--text);
 }
 
+/* Above the view bar and status bar (about 72 px together), so it never covers the zoom controls; above
+   popovers too. */
 .toast {
   position: fixed;
-  bottom: 20px;
+  bottom: 88px;
   left: 50%;
   transform: translateX(-50%);
   padding: 10px 16px;
-  border-radius: 8px;
+  border-radius: var(--radius);
   background: var(--text);
   color: var(--bg);
   box-shadow: var(--shadow);
-  z-index: 10;
+  z-index: var(--z-toast);
   max-width: calc(100% - 32px);
 }
 .toast.error {
   background: var(--danger);
-  color: #fff;
-}
-.toast[hidden] {
-  display: none;
+  color: var(--danger-contrast);
 }
 
 /* Narrow screens: viewer on top, controls below */
@@ -493,7 +452,7 @@ table.ticks[hidden] {
 
 /* ROI regions */
 .roi-dot {
-  background: #00e5ff;
+  background: var(--region-color);
 }
 .shape-icon {
   --roi-color: currentColor;
@@ -518,12 +477,12 @@ table.ticks[hidden] {
 /* Agent */
 .agent h3 {
   margin: 0 0 6px;
-  font-size: 12px;
+  font-size: var(--fs-sm);
   font-weight: 600;
 }
 .agent-review {
   border: 1px solid var(--bar-color);
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   padding: 8px;
 }
 .agent-review ul {
@@ -535,24 +494,23 @@ table.ticks[hidden] {
   gap: 8px;
 }
 .agent-review li {
-  font-size: 12px;
+  font-size: var(--fs-sm);
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
-
-.agent-review li.rejected > div:first-child {
-  color: var(--danger);
-  font-weight: 600;
+/* Each review entry starts with its panel's chip; keep it at its own width in the column. */
+.agent-review li > .chip {
+  align-self: flex-start;
 }
 .agent-log {
   margin: 0;
   padding: 6px 8px 6px 26px;
   max-height: 280px;
   overflow-y: auto;
-  font-size: 12px;
+  font-size: var(--fs-sm);
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   background: var(--surface-2);
   overflow-wrap: anywhere;
 }
@@ -569,9 +527,6 @@ table.ticks[hidden] {
 .agent-log .result {
   color: var(--muted);
 }
-.hint.error {
-  color: var(--warn-text);
-}
 .agent-log .done {
   font-weight: 600;
 }
@@ -579,21 +534,20 @@ table.ticks[hidden] {
   display: inline-block;
   margin-right: 6px;
   padding: 0 5px;
-  border-radius: 3px;
-  font-family: var(--sans, inherit);
-  font-size: 10px;
+  border-radius: var(--radius-sm);
+  font-size: var(--fs-xs);
   font-weight: 600;
   text-transform: uppercase;
   background: var(--border);
   color: var(--muted);
 }
 .agent-log .who.agent {
-  background: var(--accent-soft, #dbe8fb);
-  color: var(--accent, #1f5fbf);
+  background: var(--accent-soft);
+  color: var(--accent);
 }
 .agent-log .who.decision {
-  background: #efe3fa;
-  color: #6b3aa0;
+  background: var(--decision-bg);
+  color: var(--decision-text);
 }
 
 /* Settings dialog */
@@ -622,6 +576,17 @@ table.ticks[hidden] {
   border-bottom: 1px solid var(--border);
   margin: 0;
 }
+/* A dialog title, not an uppercase card title. */
+.settings-head h2 {
+  font-size: var(--fs-lg);
+  font-weight: 650;
+  letter-spacing: 0;
+  text-transform: none;
+}
+.settings-head .btn.icon-only {
+  width: var(--control-h);
+  min-width: var(--control-h);
+}
 .settings-body {
   display: grid;
   grid-template-columns: 170px 1fr;
@@ -643,7 +608,7 @@ table.ticks[hidden] {
   color: var(--text);
   font: inherit;
   padding: 7px 10px;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   cursor: pointer;
 }
 .settings-nav button:hover {
@@ -663,14 +628,11 @@ table.ticks[hidden] {
 }
 .settings-pane h3 {
   margin: 0;
-  font-size: 15px;
-}
-.settings-pane p {
-  margin: 0;
+  font-size: var(--fs-base);
 }
 .settings-pane fieldset {
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   padding: 8px 12px 12px;
   margin: 0;
   display: flex;
@@ -679,23 +641,15 @@ table.ticks[hidden] {
 }
 .settings-pane legend {
   font-weight: 600;
-  font-size: 13px;
+  font-size: var(--fs-md);
   padding: 0 4px;
 }
 /* Fixed key and button columns, so the hotkey sections' columns line up. */
 table.hotkeys {
   width: 100%;
   border-collapse: collapse;
-  font-size: 13px;
+  font-size: var(--fs-md);
   table-layout: fixed;
-}
-table.hotkeys th {
-  text-align: left;
-  font-weight: 500;
-  font-size: 12px;
-  color: var(--muted);
-  padding: 4px 6px;
-  border-bottom: 1px solid var(--border);
 }
 table.hotkeys td {
   padding: 4px 6px;
@@ -703,13 +657,23 @@ table.hotkeys td {
   vertical-align: middle;
 }
 table.hotkeys td:nth-child(2) {
-  width: 130px;
+  width: 110px;
   white-space: nowrap;
 }
 table.hotkeys td:last-child {
-  width: 180px;
-  text-align: right;
-  white-space: nowrap;
+  width: 250px;
+}
+.hotkey-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-1);
+}
+/* Row buttons (Change, Reset, Clear; a color's Reset) at the sidebar's height, so the long lists stay compact. */
+.settings-pane :is(.hotkey-actions, .color-row) .btn {
+  height: var(--control-h-sm);
+  min-height: var(--control-h-sm);
+  padding: 0 var(--space-2);
+  font-size: var(--fs-md);
 }
 table.hotkeys tr:last-child td {
   border-bottom: 0;
@@ -723,10 +687,10 @@ kbd {
   padding: 1px 6px;
   margin: 1px 4px 1px 0;
   text-align: center;
-  font: 12px var(--mono);
+  font: var(--fs-sm) var(--mono);
   border: 1px solid var(--border);
   border-bottom-width: 2px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   background: var(--surface-2);
 }
 @media (max-width: 600px) {
@@ -746,6 +710,10 @@ kbd {
 .bar-match {
   margin: 0;
   line-height: 1.4;
+}
+.bar-match .btn {
+  margin-left: var(--space-1);
+  vertical-align: middle;
 }
 .bar-match code {
   color: var(--text);
@@ -802,7 +770,7 @@ kbd {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 13px;
+  font-size: var(--fs-md);
 }
 .color-name {
   flex: 1;
@@ -819,7 +787,7 @@ kbd {
   height: 24px;
   padding: 0 2px;
   border: 1px solid var(--border);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   background: var(--surface);
   cursor: pointer;
 }

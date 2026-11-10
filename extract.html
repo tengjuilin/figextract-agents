@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>FigExtract Agents</title>
-  <meta name="description" content="Turn colors in scientific figures back into numbers: heatmap grids and signal inside regions of interest (ROI).">
+  <meta name="description" content="Turn colors in scientific figures back into numbers: heatmap grids, signal inside regions of interest (ROI) and near-continuous maps.">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='8' height='8' fill='%23dfe3ff'/%3E%3Crect x='8' width='8' height='8' fill='%235560f0'/%3E%3Crect y='8' width='8' height='8' fill='%232530e0'/%3E%3Crect x='8' y='8' width='8' height='8' fill='%23a3a9ff'/%3E%3C/svg%3E">
   <link rel="stylesheet" href="/src/styles/base.css">
   <link rel="stylesheet" href="/src/styles/extract.css">
@@ -21,16 +21,14 @@
       <a href="#roi" data-tool-link="roi">ROI</a>
       <a href="#map" data-tool-link="map">Map</a>
     </nav>
-    <label class="btn primary">
-      Open file…
-      <input id="file-input" type="file" accept=".pdf,.png,.jpg,.jpeg,.gif,.bmp,.webp,.zip,image/*,application/pdf,application/zip" hidden>
-    </label>
+    <button id="btn-open" type="button" class="btn primary" data-icon="upload" title="Open a PDF, an image or a saved project (.zip)">Open file…</button>
+    <input id="file-input" type="file" accept=".pdf,.png,.jpg,.jpeg,.gif,.bmp,.webp,.zip,image/*,application/pdf,application/zip" hidden>
     <span id="source-label" class="source-label muted">No file loaded</span>
     <span class="spacer"></span>
-    <button id="btn-undo" data-no-cap class="btn ghost" title="Undo (Ctrl+Z, ⌘Z on a Mac)" data-hotkey="undo" data-title="Undo" disabled>Undo</button>
-    <button id="btn-redo" data-no-cap class="btn ghost" title="Redo (Ctrl+Shift+Z or Ctrl+Y, ⇧⌘Z on a Mac)" data-hotkey="redo" data-title="Redo" disabled>Redo</button>
-    <button id="btn-export-zip" class="btn" disabled>Export project (.zip)</button>
-    <button id="btn-settings" class="btn ghost" title="Settings: agent, matching, hotkeys" aria-haspopup="dialog">Settings</button>
+    <button id="btn-undo" type="button" data-no-cap class="btn subtle" data-icon="undo" title="Undo (Ctrl+Z, ⌘Z on a Mac)" data-hotkey="undo" data-title="Undo" disabled>Undo</button>
+    <button id="btn-redo" type="button" data-no-cap class="btn subtle" data-icon="redo" title="Redo (Ctrl+Shift+Z or Ctrl+Y, ⇧⌘Z on a Mac)" data-hotkey="redo" data-title="Redo" disabled>Redo</button>
+    <button id="btn-export-zip" type="button" class="btn" data-icon="download" title="Save the file, every panel and the results in one zip, to reopen later" disabled>Export project (.zip)</button>
+    <button id="btn-settings" type="button" class="btn subtle" data-icon="settings" title="Settings: agent, matching, hotkeys and colors" aria-haspopup="dialog">Settings</button>
   </header>
 
   <main class="layout">
@@ -42,7 +40,7 @@
           <li>Add one panel per heatmap.</li>
           <li><b>Grid</b>: click the outer top-left and bottom-right corners of the heatmap, then set rows, columns and labels.</li>
           <li><b>Colorbar</b>: click the two ends of the colorbar along its middle, then click at least two tick marks and type their values.</li>
-          <li>Check the results (toggle <i>Reconstruct</i> to compare colors), then download CSV or export the project zip to reload later.</li>
+          <li>Check the results (toggle <i>Show reconstruction</i> to compare colors), then download CSV or export the project zip to reload later.</li>
         </ol>
         <ol data-tool="roi" hidden>
           <li>Open a PDF, PNG or JPG of the figure, for example an IVIS luminescence image (or drop / paste it). For PDFs pick the page and resolution.</li>
@@ -60,7 +58,7 @@
           <li><b>Results</b>: bin size 1 gives one value per pixel; larger bins take the median and smooth out JPEG noise. <b>Profiles</b> give values along a line. Download CSVs or export the project zip.</li>
         </ol>
         <p class="muted" data-tool="map" hidden>Published images are usually compressed and contrast-adjusted: values are in the units of the colorbar as displayed, the colorbar limits how many levels can be told apart, and colors at its ends may be clipped (<i>Show flags</i>).</p>
-        <p class="muted">Switch tools at the top at any time: the file and both tools' work stay, and one project zip holds everything. Scroll to zoom, drag to pan, ← → to flip PDF pages, drag handles to adjust. Esc cancels, Ctrl+Z (⌘Z on a Mac) undoes; change the hotkeys in <i>Settings</i>. Everything runs in your browser; files are never uploaded, except page images sent to OpenRouter when you run the agent.</p>
+        <p class="muted">Switch tools at the top at any time: the file and all three tools' work stay, and one project zip holds everything. Scroll to zoom, drag to pan, ← → to flip PDF pages, drag handles to adjust. Esc cancels, Ctrl+Z (⌘Z on a Mac) undoes; change the hotkeys in <i>Settings</i>. Everything runs in your browser; files are never uploaded, except page images sent to OpenRouter when you run the agent.</p>
       </details>
 
       <section class="card agent" id="sec-agent" hidden></section>
@@ -92,12 +90,13 @@
       <div id="viewer" class="viewer">
         <div id="empty-state" class="empty-state">
           <div class="empty-stack">
-            <div class="empty-card dropzone" id="dropzone">
+            <div class="empty-card dropzone" id="dropzone" role="button" tabindex="0" aria-label="Choose a PDF, an image or a project zip to open">
               <div class="empty-icon" aria-hidden="true"></div>
-              <p><b>Drop a PDF, PNG or JPG here</b></p>
+              <p><b>Drop a PDF or image here</b></p>
               <p class="muted">or paste an image, or open a saved project <code>.zip</code></p>
-              <label class="btn primary">Choose file…<input id="file-input-2" type="file" accept=".pdf,.png,.jpg,.jpeg,.gif,.bmp,.webp,.zip,image/*,application/pdf,application/zip" hidden></label>
+              <button id="btn-open-2" type="button" class="btn primary" data-icon="upload" tabindex="-1">Choose file…</button>
             </div>
+            <input id="file-input-2" type="file" accept=".pdf,.png,.jpg,.jpeg,.gif,.bmp,.webp,.zip,image/*,application/pdf,application/zip" hidden>
             <div class="empty-card examples">
               <p><b>Or try an example</b></p>
               <button class="btn" type="button" data-example="examples/example.pdf" data-example-type="application/pdf">Example PDF</button>
@@ -107,17 +106,17 @@
         </div>
         <div id="drop-overlay" class="drop-overlay" hidden>Drop to open</div>
       </div>
-      <div id="modebar" class="modebar" hidden>
+      <div id="modebar" class="modebar" role="status" aria-live="polite" hidden>
         <span id="modebar-text"></span>
-        <button class="btn small" id="mode-done">Done</button>
+        <button type="button" class="btn" id="mode-done">Done</button>
       </div>
       <div class="viewbar" id="view-tools" hidden>
         <span id="source-info" class="source-info"></span>
         <span id="pdf-controls" class="viewbar-group" hidden>
-          <button class="btn icon" id="page-prev" data-no-cap aria-label="Previous page" title="Previous page (←)" data-hotkey="prevPage" data-title="Previous page">‹</button>
+          <button type="button" class="btn icon-only" id="page-prev" data-icon="prev" data-no-cap aria-label="Previous page" title="Previous page (←)" data-hotkey="prevPage" data-title="Previous page"></button>
           <input id="page-input" type="number" min="1" value="1" class="num" aria-label="Page">
-          <span id="page-count" class="muted small"></span>
-          <button class="btn icon" id="page-next" data-no-cap aria-label="Next page" title="Next page (→)" data-hotkey="nextPage" data-title="Next page">›</button>
+          <span id="page-count" class="muted"></span>
+          <button type="button" class="btn icon-only" id="page-next" data-icon="next" data-no-cap aria-label="Next page" title="Next page (→)" data-hotkey="nextPage" data-title="Next page"></button>
           <select id="scale-select" title="Resolution" aria-label="Resolution">
             <option value="1">72 dpi (1×)</option>
             <option value="2">144 dpi (2×)</option>
@@ -128,12 +127,12 @@
           </select>
         </span>
         <span class="viewbar-group zoom-group">
-          <button class="btn icon" id="zoom-out" data-no-cap title="Zoom out (−)" data-hotkey="zoomOut" data-title="Zoom out">−</button>
+          <button type="button" class="btn icon-only" id="zoom-out" data-icon="minus" data-no-cap aria-label="Zoom out" title="Zoom out (−)" data-hotkey="zoomOut" data-title="Zoom out"></button>
           <input id="zoom-level" class="zoom-level" type="text" inputmode="decimal" value="100%" title="Zoom (100% = actual size); type a value and press Enter" aria-label="Zoom percent">
-          <button class="btn icon" id="zoom-in" data-no-cap title="Zoom in (+)" data-hotkey="zoomIn" data-title="Zoom in">+</button>
-          <button class="btn small" id="zoom-fit" data-no-cap title="Fit (F)" data-hotkey="fit" data-title="Fit">Fit</button>
-          <button class="btn small" id="toggle-crosshair" title="Crosshair lines across the canvas (C)" data-hotkey="crosshair" data-title="Crosshair lines across the canvas" aria-pressed="false">Crosshair</button>
-          <button class="btn small active" id="toggle-overlay" title="Show the grid and colorbar overlay" aria-pressed="true">Overlay</button>
+          <button type="button" class="btn icon-only" id="zoom-in" data-icon="plus" data-no-cap aria-label="Zoom in" title="Zoom in (+)" data-hotkey="zoomIn" data-title="Zoom in"></button>
+          <button type="button" class="btn" id="zoom-fit" data-no-cap title="Fit (F)" data-hotkey="fit" data-title="Fit">Fit</button>
+          <button type="button" class="btn" id="toggle-crosshair" title="Crosshair lines across the canvas (C)" data-hotkey="crosshair" data-title="Crosshair lines across the canvas" aria-pressed="false">Crosshair</button>
+          <button type="button" class="btn active" id="toggle-overlay" title="Show the grid and colorbar overlay" aria-pressed="true">Overlay</button>
         </span>
       </div>
       <footer class="statusbar" id="statusbar">
