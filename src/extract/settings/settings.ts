@@ -44,18 +44,18 @@ export const HOTKEY_ACTIONS: HotkeyAction[] = [
   { id: 'crosshair', group: 'view', label: 'Crosshair', keys: ['C'] },
   { id: 'prevPage', group: 'view', label: 'Previous page', keys: ['ArrowLeft'] },
   { id: 'nextPage', group: 'view', label: 'Next page', keys: ['ArrowRight'] },
-  { id: 'grid', group: 'calibration', label: 'Place grid or plot area corners', keys: ['G'] },
+  { id: 'grid', group: 'calibration', label: 'Place grid corners or plot area', keys: ['G'] },
   { id: 'colorbar', group: 'calibration', label: 'Place colorbar ends', keys: ['B'] },
   { id: 'ticks', group: 'calibration', label: 'Add colorbar ticks', keys: ['T'] },
   { id: 'ellipse', group: 'roi', label: 'Ellipse region', keys: ['E'], tool: 'roi' },
   { id: 'rect', group: 'roi', label: 'Rectangle region', keys: ['R'], tool: 'roi' },
   { id: 'polygon', group: 'roi', label: 'Polygon region', keys: ['P'], tool: 'roi' },
-  { id: 'xtick', group: 'map', label: 'Add x-axis ticks', keys: ['X'], tool: 'map' },
-  { id: 'ytick', group: 'map', label: 'Add y-axis ticks', keys: ['Y'], tool: 'map' },
-  { id: 'profile', group: 'map', label: 'Draw a line profile', keys: ['L'], tool: 'map' },
+  { id: 'xtick', group: 'map', label: 'Add x ticks', keys: ['X'], tool: 'map' },
+  { id: 'ytick', group: 'map', label: 'Add y ticks', keys: ['Y'], tool: 'map' },
+  { id: 'profile', group: 'map', label: 'Draw profile', keys: ['L'], tool: 'map' },
   { id: 'copyProfiles', group: 'map', label: 'Copy selected profiles', keys: ['Mod+C'], tool: 'map' },
   { id: 'pasteProfiles', group: 'map', label: 'Paste profiles', keys: ['Mod+V'], tool: 'map' },
-  { id: 'sweepProfile', group: 'map', label: 'Sweep the profile across the plot', keys: ['K'], tool: 'map' },
+  { id: 'sweepProfile', group: 'map', label: 'Sweep profile', keys: ['K'], tool: 'map' },
 ];
 // Keys with a fixed meaning: cancel, pan, and finishing or editing a polygon.
 export const RESERVED_KEYS = ['Escape', 'Space', 'Enter', 'Backspace', 'Delete', 'Tab'];
@@ -316,15 +316,16 @@ export function formatCombo(combo: string, mac = false) {
 }
 
 // Tooltip and key cap of a button bound to hotkeys. `base` is the button's
-// data-title: "Shortcut: {key}" puts the keys where {key} is, any other text
-// gets them in parentheses. `key` is the first combo, for the key cap.
+// data-title: "Description. Shortcut: {key}" puts the keys where {key} is, any
+// other text gets them in parentheses. With no key bound, the "Shortcut: {key}"
+// part goes away. `key` is the first combo, for the key cap.
 export function hotkeyTitle(base: string, combos: string[], label: (combo: string) => string) {
   const key = combos.length ? label(combos[0]) : '';
   const keys = combos.map(label).join(' or ');
   const title = base.includes('{key}')
     ? keys
       ? base.replace('{key}', keys)
-      : base.replace(/\s*[:(]?\s*\{key\}\)?/, '')
+      : base.replace(/\s*\(?Shortcut:\s*\{key\}\)?|\s*[:(]?\s*\{key\}\)?/, '')
     : keys
       ? `${base} (${keys})`
       : base;

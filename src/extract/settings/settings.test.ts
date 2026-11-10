@@ -167,7 +167,12 @@ test('hotkeyTitle names the keys in the tooltip and gives the key cap', () => {
   assert.deepEqual(hotkeyTitle('Shortcut: {key}', ['G', 'Mod+K'], label), { title: 'Shortcut: G or Ctrl+K', key: 'G' });
   assert.deepEqual(hotkeyTitle('Place the grid', ['G'], label), { title: 'Place the grid (G)', key: 'G' });
   // No key bound: the placeholder goes, with its lead-in.
-  assert.deepEqual(hotkeyTitle('Shortcut: {key}', [], label), { title: 'Shortcut', key: '' });
+  assert.deepEqual(hotkeyTitle('Shortcut: {key}', [], label), { title: '', key: '' });
+  assert.deepEqual(hotkeyTitle('Place the ends. Shortcut: {key}', [], label), { title: 'Place the ends.', key: '' });
+  assert.deepEqual(hotkeyTitle('Place the ends. Shortcut: {key}', ['B'], label), {
+    title: 'Place the ends. Shortcut: B',
+    key: 'B',
+  });
   assert.deepEqual(hotkeyTitle('Place the grid: {key}', [], label), { title: 'Place the grid', key: '' });
   assert.deepEqual(hotkeyTitle('Place the grid', [], label), { title: 'Place the grid', key: '' });
 });

@@ -1,8 +1,8 @@
 // Import and export pane of the Settings dialog: all settings as a zip, and Reset. Import keeps the current
 // API key when the file has none; Reset keeps the key too.
 import JSZip from 'jszip';
-import { useState } from 'react';
-import { Btn, Check } from '../../ui/index.ts';
+import { useRef, useState } from 'react';
+import { Actions, Btn, Check, Notice, SplitActions } from '../../ui/index.ts';
 import { buildSettingsZip, defaultSettings, readSettingsFile } from './settings.ts';
 import { useSettingsCtl } from './settings-ctl.ts';
 
@@ -10,6 +10,7 @@ export function TransferPane() {
   const ctl = useSettingsCtl();
   const { ws } = ctl;
   const [includeKey, setIncludeKey] = useState(false);
+  const fileInput = useRef<HTMLInputElement>(null);
 
   async function exportZip() {
     if (includeKey && !ctl.settings.agent.key) ws.toast('There is no API key to include.');
@@ -44,51 +45,49 @@ export function TransferPane() {
 
   return (
     <>
-      <fieldset>
-        <legend>Export</legend>
-        <Check
-          small
-          id="settings-include-key"
-          label="Include the API key"
-          checked={includeKey}
-          onChange={setIncludeKey}
-        />
-        <p className="muted small">
+      <Check
+        id="settings-include-key"
+        label="Include the API key in the export"
+        title="The key is stored as plain text in the zip"
+        checked={includeKey}
+        onChange={setIncludeKey}
+      />
+      {includeKey ? (
+        <Notice>
           The key is stored as plain text in the zip. Anyone with the file can spend your OpenRouter credit.
-        </p>
-        <div className="row">
-          <Btn variant="primary" id="settings-export" onClick={() => void exportZip()}>
-            Export settings (.zip)
-          </Btn>
-        </div>
-      </fieldset>
-      <fieldset>
-        <legend>Import</legend>
-        <p className="muted small">
-          Replaces the current settings. If the file has no API key, the current key is kept.
-        </p>
-        <div className="row">
-          <label className="btn">
-            Import settings…
-            <input
-              id="settings-import"
-              type="file"
-              accept=".zip,.json,application/zip,application/json"
-              hidden
-              onChange={(e) => void importFile(e.target)}
-            />
-          </label>
-        </div>
-      </fieldset>
-      <fieldset>
-        <legend>Reset</legend>
-        <div className="row">
-          <Btn variant="danger" id="settings-reset" onClick={reset}>
-            Reset all settings
-          </Btn>
-        </div>
-        <p className="muted small">Back to the defaults; the API key is kept.</p>
-      </fieldset>
+        </Notice>
+      ) : null}
+      <SplitActions>
+        <Btn id="settings-export" icon="download" title="Save all settings to a zip" onClick={() => void exportZip()}>
+          Export settings (.zip)
+        </Btn>
+        <Btn
+          icon="upload"
+          title="Replace the current settings with a settings zip. If the file has no API key, the current key is kept."
+          onClick={() => fileInput.current?.click()}
+        >
+          Import settings (.zip)
+        </Btn>
+      </SplitActions>
+      <input
+        ref={fileInput}
+        id="settings-import"
+        type="file"
+        accept=".zip,.json,application/zip,application/json"
+        hidden
+        onChange={(e) => void importFile(e.target)}
+      />
+      <Actions>
+        <Btn
+          variant="danger"
+          icon="reset"
+          id="settings-reset"
+          title="Back to the defaults; the API key is kept"
+          onClick={reset}
+        >
+          Reset all settings
+        </Btn>
+      </Actions>
     </>
   );
 }

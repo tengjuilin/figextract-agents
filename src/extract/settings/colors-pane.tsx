@@ -2,7 +2,7 @@
 // fieldsets by COLOR_GROUPS. Changes redraw the figure at once; the setting is saved when the picker commits.
 import { useEffect, useRef, useState } from 'react';
 import type { ColorItem } from '../../types/index.ts';
-import { Btn, useSettings } from '../../ui/index.ts';
+import { Actions, Btn, useSettings } from '../../ui/index.ts';
 import { COLOR_GROUPS, COLOR_ITEMS, defaultSettings } from './settings.ts';
 import { useSettingsCtl } from './settings-ctl.ts';
 
@@ -80,8 +80,9 @@ function ColorRow({ item }: { item: ColorItem }) {
         ))}
       </span>
       <Btn
-        className="small"
+        icon="reset"
         disabled={isDefault}
+        title="Back to the default color"
         onClick={() => {
           ctl.settings.colors[item.id] = structuredClone(item.value);
           ctl.changed();
@@ -109,10 +110,12 @@ export function ColorsPane() {
           </fieldset>
         ))}
       </div>
-      <div className="row">
+      <Actions>
         <Btn
-          className="small"
+          variant="danger"
+          icon="reset"
           id="colors-reset"
+          title="Back to the default overlay colors"
           onClick={() => {
             ctl.settings.colors = defaultSettings().colors;
             ctl.changed();
@@ -122,7 +125,7 @@ export function ColorsPane() {
         >
           Reset all colors
         </Btn>
-      </div>
+      </Actions>
     </>
   );
 }

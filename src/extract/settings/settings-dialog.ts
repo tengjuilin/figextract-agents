@@ -82,6 +82,9 @@ export function setupSettings(ws: Workspace): SettingsUi {
       ['--highlight-color', 'highlight'],
     ])
       root.setProperty(name, settings.colors[id] as string);
+    // The Regions card's dot shows the first region color.
+    const regions = settings.colors.roiPalette;
+    root.setProperty('--region-color', (Array.isArray(regions) ? regions[0] : regions) as string);
   }
   listeners.push(applyCssColors);
   applyCssColors();

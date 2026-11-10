@@ -56,6 +56,8 @@ test('nothing renders until the first open; open shows the dialog on the request
   assert.equal((document.querySelector('[data-settings-pane="hotkeys"]') as HTMLElement).hidden, false);
   assert.equal((document.querySelector('[data-settings-pane="agent"]') as HTMLElement).hidden, true);
   assert.equal(document.querySelector('[data-settings-tab="hotkeys"]')!.className, 'active');
+  assert.equal(document.querySelector('[data-settings-tab="hotkeys"]')!.getAttribute('aria-current'), 'page');
+  assert.equal(document.querySelector('[data-settings-tab="agent"]')!.getAttribute('aria-current'), null);
   fireEvent.click(document.querySelector('[data-settings-tab="colors"]')!);
   assert.equal((document.querySelector('[data-settings-pane="colors"]') as HTMLElement).hidden, false);
 });
@@ -73,9 +75,9 @@ test('hotkeys: Change, press a key, the binding is saved, the static cap and too
   act(() => ui.open('hotkeys'));
   const row = () =>
     [...document.querySelectorAll('table.hotkeys tr')].find(
-      (r) => r.children[0].textContent === 'Place grid or plot area corners',
+      (r) => r.children[0].textContent === 'Place grid corners or plot area',
     )!;
-  const grid = HOTKEY_ACTIONS.find((a) => a.label === 'Place grid or plot area corners')!;
+  const grid = HOTKEY_ACTIONS.find((a) => a.label === 'Place grid corners or plot area')!;
   assert.equal(document.getElementById('host')!.dataset.key, ui.get().hotkeys[grid.id][0] ?? '');
   const btn = (name: string) => [...row().querySelectorAll('button')].find((b) => b.textContent === name)!;
   fireEvent.click(btn('Change'));
@@ -233,6 +235,10 @@ test('Reset keeps the key; import and export are wired', async () => {
   assert.equal(ui.get().agent.key, 'keep-me');
   assert.notDeepEqual(ui.get().hotkeys.grid, ['Z']);
   assert.ok(toasts.includes('Settings reset.'));
+  // Import is a button that opens the hidden file input.
+  const picked = vi.spyOn(el('settings-import'), 'click').mockImplementation(() => {});
+  fireEvent.click([...document.querySelectorAll('button')].find((b) => b.textContent === 'Import settings (.zip)')!);
+  assert.equal(picked.mock.calls.length, 1);
   fireEvent.click(el('settings-export'));
   await waitFor(() => assert.deepEqual(downloads, ['figextract-settings.zip']));
   vi.unstubAllGlobals();

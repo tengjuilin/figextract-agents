@@ -1,14 +1,26 @@
 // Matching pane of the Settings dialog: how colors are matched to the colorbar, per tool. Changing a value
 // applies it to every panel of that tool in the open project (ws.applyMatching, Undo reverts it).
 import type { MatchingSettings, ToolKind } from '../../types/index.ts';
-import { BoundInput, BoundSelect, Btn, Field, Notice, parseNumber, useSettings } from '../../ui/index.ts';
+import {
+  Actions,
+  BoundInput,
+  BoundSelect,
+  Btn,
+  Field,
+  Fields,
+  Notice,
+  parseNumber,
+  useSettings,
+} from '../../ui/index.ts';
 import { MATCHING_DEFAULTS } from './settings.ts';
 import { useSettingsCtl } from './settings-ctl.ts';
 
 const DISTANCES = [
   { value: 'de2000', label: 'CIEDE2000' },
-  { value: 'de76', label: 'CIE76 (Lab distance)' },
+  { value: 'de76', label: 'CIE76', title: 'Euclidean distance in CIELAB' },
 ];
+
+const DISTANCE_TITLE = 'How the distance between a color and the colorbar colors is measured';
 
 // Panels of the open project can differ (an opened zip, or the agent's set_settings).
 export function matchingNote(
@@ -47,8 +59,8 @@ export function MatchingPane() {
     const v = parseNumber(text);
     if (v !== null) setMatching(kind, key, Math.min(hi, Math.max(lo, v)));
   };
-  const distance = (kind: ToolKind, id: string) => (
-    <Field label="Color difference">
+  const distance = (kind: ToolKind, id: string, title: string) => (
+    <Field label="Color difference" title={title}>
       <BoundSelect
         id={id}
         value={settings.matching[kind].distance}
@@ -57,8 +69,8 @@ export function MatchingPane() {
       />
     </Field>
   );
-  const maxDe = (kind: ToolKind, id: string) => (
-    <Field label="Flag colors with ΔE above">
+  const maxDe = (kind: ToolKind, id: string, title: string) => (
+    <Field label="Flag colors with ΔE above" title={title}>
       <BoundInput
         id={id}
         kind="number"
@@ -74,23 +86,25 @@ export function MatchingPane() {
   const note = app.sourceCanvas ? matchingNote(app.project.panels, settings.matching) : '';
   return (
     <>
-      <Notice id="matching-note" className="small">
-        {note}
-      </Notice>
+      <Notice id="matching-note">{note}</Notice>
       <fieldset>
         <legend>Heatmap</legend>
-        <div className="row wrap">
-          {distance('heatmap', 'set-hm-distance')}
-          {maxDe('heatmap', 'set-hm-maxde')}
-        </div>
-        <p className="muted small">
-          Cells whose color is further than the ΔE limit from every colorbar color are outlined in red.
-        </p>
+        <Fields>
+          {distance('heatmap', 'set-hm-distance', DISTANCE_TITLE)}
+          {maxDe(
+            'heatmap',
+            'set-hm-maxde',
+            'Cells whose color is further than this from every colorbar color are flagged (outlined in red)',
+          )}
+        </Fields>
       </fieldset>
       <fieldset>
         <legend>ROI</legend>
-        <div className="row wrap">
-          <Field label="Background: gray up to chroma">
+        <Fields>
+          <Field
+            label="Gray background up to chroma"
+            title="Pixels whose color is nearly gray (CIELAB chroma at or below this) are background with no signal"
+          >
             <BoundInput
               id="set-roi-gray"
               kind="number"
@@ -102,30 +116,31 @@ export function MatchingPane() {
               onCommit={number('roi', 'grayChroma', 0, 60)}
             />
           </Field>
-          {distance('roi', 'set-roi-distance')}
-          {maxDe('roi', 'set-roi-maxde')}
-        </div>
-        <p className="muted small">
-          Pixels whose color is nearly gray (CIELAB chroma at or below the threshold) are background with no signal.
-          Colored pixels that match no colorbar color (ΔE above the limit, e.g. colored text) are counted as signal but
-          reported as flagged.
-        </p>
+          {distance('roi', 'set-roi-distance', DISTANCE_TITLE)}
+          {maxDe(
+            'roi',
+            'set-roi-maxde',
+            'Colored pixels further than this from every colorbar color (colored text, for example) count as signal but are flagged',
+          )}
+        </Fields>
       </fieldset>
       <fieldset>
         <legend>Map</legend>
-        <div className="row wrap">
-          {distance('map', 'set-map-distance')}
-          {maxDe('map', 'set-map-maxde')}
-        </div>
-        <p className="muted small">
-          Values whose color is further than the ΔE limit from every colorbar color are shown in red under{' '}
-          <i>Show flags</i>. CIE76 is about 10× faster on large maps.
-        </p>
+        <Fields>
+          {distance('map', 'set-map-distance', `${DISTANCE_TITLE}. CIE76 is about 10× faster on large maps.`)}
+          {maxDe(
+            'map',
+            'set-map-maxde',
+            'Values further than this from every colorbar color are shown in red under Show flags',
+          )}
+        </Fields>
       </fieldset>
-      <div className="row">
+      <Actions>
         <Btn
-          className="small"
+          variant="danger"
+          icon="reset"
           id="matching-reset"
+          title="Back to the default matching of every tool"
           onClick={() => {
             for (const [kind, defs] of Object.entries(MATCHING_DEFAULTS) as [ToolKind, MatchingSettings][]) {
               ctl.settings.matching[kind] = { ...defs };
@@ -134,9 +149,9 @@ export function MatchingPane() {
             ctl.changed();
           }}
         >
-          Reset matching to defaults
+          Reset all matching
         </Btn>
-      </div>
+      </Actions>
     </>
   );
 }

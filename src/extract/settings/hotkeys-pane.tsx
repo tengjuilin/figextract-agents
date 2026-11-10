@@ -3,7 +3,7 @@
 // the viewer); a key already used by an action that can be active together moves here with a toast.
 import { useEffect, useSyncExternalStore } from 'react';
 import type { HotkeyAction } from '../../types/index.ts';
-import { Btn, useSettings } from '../../ui/index.ts';
+import { Actions, Btn, useSettings } from '../../ui/index.ts';
 import {
   comboFromEvent,
   defaultSettings,
@@ -38,20 +38,26 @@ function HotkeyRow({ action }: { action: HotkeyAction }) {
         )}
       </td>
       <td>
-        <Btn className="small" onClick={() => ctl.ui.setCapturing(capturing ? null : action.id)}>
-          {capturing ? 'Cancel' : 'Change'}
-        </Btn>{' '}
-        <Btn
-          className="small"
-          disabled={isDefault}
-          title={`Default: ${action.keys.map(label).join(', ')}`}
-          onClick={() => setKeys([...action.keys])}
-        >
-          Reset
-        </Btn>{' '}
-        <Btn className="small" disabled={!combos.length} onClick={() => setKeys([])}>
-          Clear
-        </Btn>
+        <span className="hotkey-actions">
+          <Btn
+            icon="type"
+            title="Press the new key or combination next. A key used by another action that can be active at the same time moves to this one."
+            onClick={() => ctl.ui.setCapturing(capturing ? null : action.id)}
+          >
+            {capturing ? 'Cancel' : 'Change'}
+          </Btn>
+          <Btn
+            icon="reset"
+            disabled={isDefault}
+            title={`Default: ${action.keys.map(label).join(', ')}`}
+            onClick={() => setKeys([...action.keys])}
+          >
+            Reset
+          </Btn>
+          <Btn variant="danger" icon="close" disabled={!combos.length} onClick={() => setKeys([])}>
+            Clear
+          </Btn>
+        </span>
       </td>
     </tr>
   );
@@ -121,10 +127,12 @@ export function HotkeysPane() {
           </fieldset>
         ))}
       </div>
-      <div className="row">
+      <Actions>
         <Btn
-          className="small"
+          variant="danger"
+          icon="reset"
           id="hotkeys-reset"
+          title="Back to the default hotkeys"
           onClick={() => {
             ctl.ui.setCapturing(null);
             ctl.settings.hotkeys = defaultSettings().hotkeys;
@@ -133,7 +141,7 @@ export function HotkeysPane() {
         >
           Reset all hotkeys
         </Btn>
-      </div>
+      </Actions>
     </>
   );
 }
