@@ -37,10 +37,10 @@ interface MatchContext {
 
 // Returns a description of what is still missing before extraction, or null.
 export function panelProblem(panel: Panel): string | null {
-  if (!panel.grid.corners) return 'Set the heatmap grid corners.';
+  if (!panel.grid.corners) return 'Place the grid corners.';
   // Dot centers give the cell spacing only with at least two dots per side.
   if (panel.grid.anchor === 'centers' && (panel.grid.rows < 2 || panel.grid.cols < 2))
-    return 'Dot centers need at least 2 rows and 2 columns.';
+    return 'Set at least 2 rows and 2 columns for dot centers.';
   return colorbarProblem(panel);
 }
 

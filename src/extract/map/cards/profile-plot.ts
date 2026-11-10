@@ -29,6 +29,18 @@ interface PlotState {
   sy: (y: number) => number;
 }
 
+/**
+ * A color token as a color the canvas understands. Tokens hold `light-dark(…)` (base.css), which a canvas
+ * cannot parse and getPropertyValue returns unresolved, so the element's computed `color` resolves it.
+ */
+function tokenColor(el: HTMLElement, name: string, fallback: string) {
+  const before = el.style.color;
+  el.style.color = `var(${name}, ${fallback})`;
+  const color = getComputedStyle(el).color;
+  el.style.color = before;
+  return color || fallback;
+}
+
 export function createProfilePlot(mctx: MapToolCore) {
   const { ws, state } = mctx;
   const { viewer } = ws;
@@ -86,12 +98,11 @@ export function createProfilePlot(mctx: MapToolCore) {
     plot = null;
     series = series.filter((s) => s.samples.length);
     if (!series.length) return;
-    const css = getComputedStyle(canvas);
-    const text = css.getPropertyValue('--text').trim() || '#222';
-    const muted = css.getPropertyValue('--muted').trim() || '#777';
-    const border = css.getPropertyValue('--border').trim() || '#ddd';
-    const accent = css.getPropertyValue('--accent').trim() || '#3b47e0';
-    const danger = css.getPropertyValue('--danger').trim() || '#c62a2a';
+    const text = tokenColor(canvas, '--text', '#222');
+    const muted = tokenColor(canvas, '--muted', '#777');
+    const border = tokenColor(canvas, '--border', '#ddd');
+    const accent = tokenColor(canvas, '--accent', '#3b47e0');
+    const danger = tokenColor(canvas, '--danger', '#c62a2a');
     const axis = plotAxis(panel, series);
     // A single profile keeps the accent color; overlaid ones match their lines.
     const lines: PlotLine[] = series.map((s) => ({
@@ -157,7 +168,7 @@ export function createProfilePlot(mctx: MapToolCore) {
     ctx.fillText(shortLabel(xr), pad.l + W, pad.t + H + 4);
     ctx.textAlign = 'center';
     ctx.fillStyle = text;
-    const scaled = { max: ' · values ÷ each max', mean: ' · values ÷ each mean' }[state.profileNorm] || '';
+    const scaled = { max: ' · divided by max', mean: ' · divided by mean' }[state.profileNorm] || '';
     ctx.fillText(axis.name + scaled, pad.l + W / 2, pad.t + H + 4);
     plot = { panel, series, lines, sx, sy };
     const traced = state.trace && lines.find((s) => s.profile.id === state.trace!.id);
@@ -173,7 +184,7 @@ export function createProfilePlot(mctx: MapToolCore) {
         H,
         axis,
         text,
-        css,
+        surface: tokenColor(canvas, '--surface', '#fff'),
         many: lines.length > 1,
       });
     }
@@ -192,7 +203,7 @@ export function createProfilePlot(mctx: MapToolCore) {
       H,
       axis,
       text,
-      css,
+      surface,
       many,
     }: {
       i: number;
@@ -204,7 +215,8 @@ export function createProfilePlot(mctx: MapToolCore) {
       H: number;
       axis: { short: string };
       text: string;
-      css: CSSStyleDeclaration;
+      /** Ring around the dot, so it stands out from the line. */
+      surface: string;
       many: boolean;
     },
   ) {
@@ -226,7 +238,7 @@ export function createProfilePlot(mctx: MapToolCore) {
     ctx.fillStyle = line.color;
     ctx.fill();
     ctx.lineWidth = 1.5;
-    ctx.strokeStyle = css.getPropertyValue('--surface').trim() || '#fff';
+    ctx.strokeStyle = surface;
     ctx.stroke();
     const name = many ? `${line.profile.name} · ` : '';
     // Normalized values are followed by the value they come from.

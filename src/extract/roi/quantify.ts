@@ -45,9 +45,9 @@ export interface RoiTableRow {
 export function roiPanelProblem(panel: Panel): string | null {
   const bar = colorbarProblem(panel);
   if (bar) return bar;
-  if (!panel.rois.length) return 'Draw at least one region (ellipse, rectangle or polygon).';
+  if (!panel.rois.length) return 'Draw at least one region.';
   if (panel.rois.some((r) => r.replicate) && !panel.grid.corners)
-    return 'Place the grid, or turn off "copy to every box" for each region.';
+    return 'Place the grid corners, or stop copying each region into every grid box.';
   return null;
 }
 

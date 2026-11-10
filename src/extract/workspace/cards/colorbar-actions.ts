@@ -1,7 +1,7 @@
 // What the Colorbar card's buttons and selects do, as functions of the workspace context w. They read the live
 // project (not what a render captured), because hotkeys and `.click()` call the same handlers.
 import { isLogScale, pointAtT } from '../../../core/colorbar.ts';
-import type { Tick, WorkspaceContext } from '../../../types/index.ts';
+import type { Colorbar, Tick, WorkspaceContext } from '../../../types/index.ts';
 import { ticksWithT } from '../../project/project.ts';
 import { cancelTickFocus, requestTickFocus } from './tick-focus.ts';
 
@@ -15,6 +15,21 @@ export function placeColorbarEnds(w: WorkspaceContext) {
   if (onPage && !confirm('Placing the colorbar again removes its ticks on the page. Continue?')) return;
   if (onPage) w.commit((p) => (p.colorbar.ticks = p.colorbar.ticks.filter((k) => !Number.isFinite(k.x))));
   w.setMode('colorbar');
+}
+
+/** True when the panel has anything of a colorbar to remove: an end, a tick or a known colormap. */
+export const hasColorbar = (cb: Colorbar) => !!(cb.start || cb.end || cb.ticks.length || cb.colormap);
+
+/**
+ * The head trash: back to a new panel's empty colorbar (createPanel) in one undo step. The scale and the
+ * sampling width stay, since they describe how to read a bar rather than where it is.
+ */
+export function removeColorbar(w: WorkspaceContext) {
+  if (!hasColorbar(w.activePanel().colorbar)) return;
+  // Clicking ticks needs a bar on the page.
+  if (w.app.mode?.type === 'tick') w.setMode(null);
+  w.commit((p) => Object.assign(p.colorbar, { start: null, end: null, ticks: [], colormap: null }));
+  w.toast('Colorbar removed. Undo brings it back.');
 }
 
 /** T: toggle clicking ticks onto the bar. */

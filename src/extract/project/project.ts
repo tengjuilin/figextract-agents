@@ -186,8 +186,8 @@ export function colorbarProblem(panel: Panel): string | null {
     if (cmapData && !cmapData.maps.some((m) => m.name === cb.colormap?.name))
       return `Unknown colormap "${cb.colormap.name}".`;
   } else {
-    if (!cb.start || !cb.end) return 'Set the colorbar start and end.';
-    if (Math.hypot(cb.end.x - cb.start.x, cb.end.y - cb.start.y) < 2) return 'Colorbar is too short.';
+    if (!cb.start || !cb.end) return 'Place the colorbar ends.';
+    if (Math.hypot(cb.end.x - cb.start.x, cb.end.y - cb.start.y) < 2) return 'Place the colorbar ends farther apart.';
   }
   return tickProblem(ticksWithT(cb), cb.scale);
 }

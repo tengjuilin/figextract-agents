@@ -1,16 +1,14 @@
+// A text field that filters the colormaps as you type (an ARIA combobox), used by the Colorbar card to pick a
+// known colormap (it came from the colormap viewer, now in Colormeris). Empty, it lists them all in their groups.
+// Typing "name_r" counts as the reversed map. Leaving it with text that names no map puts the text back.
+// Controlled: `value` is the name shown when idle; while the field is being typed in, the typed text wins over a
+// new `value`, and a focused field ignores `value` altogether. `mountMapPicker` hosts it in a plain DOM element
+// for code that is not React.
 import { cmapData, mapByName, mapColors } from 'colormeris';
 import { type KeyboardEvent, memo, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import type { ColormapEntry, Rgb } from '../../../types/index.ts';
 import { flushSafely } from '../../../ui/flush.ts';
-
-// A text field that filters the colormaps as you type (an ARIA combobox),
-// shared by Recolor (pick the new map), Compare (add maps) and the colorbar
-// card (a known colormap). Empty, it lists them all in their groups. Typing
-// "name_r" counts as the reversed map. Leaving it with text that names no map
-// puts the text back. Controlled: `value` is the name shown when idle; while
-// the field is being typed in, the typed text wins over a new `value`, and a focused field ignores `value` altogether.
-// `mountMapPicker` hosts it in a plain DOM element for code that is not React.
 
 const GROUPS: [string, string][] = [
   ['sequential', 'Sequential'],
@@ -221,7 +219,7 @@ export function MapPicker({ id, label, placeholder, value, disabled, title, onCh
         aria-activedescendant={activeId}
         autoComplete="off"
         spellCheck={false}
-        placeholder={placeholder || 'Type to search'}
+        placeholder={placeholder || 'Search colormaps'}
         disabled={disabled}
         title={title || undefined}
         value={shown}

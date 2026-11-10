@@ -55,7 +55,7 @@ function TickRow({ w, tick: k }: { w: WorkspaceContext; tick: TickWithT }) {
         <BoundInput
           kind="number"
           step="any"
-          placeholder="value"
+          aria-label="Tick value"
           value={Number.isFinite(k.value) ? k.value : ''}
           onFocus={reset}
           onInput={setValue}
@@ -71,7 +71,6 @@ function TickRow({ w, tick: k }: { w: WorkspaceContext; tick: TickWithT }) {
           max={110}
           className="num"
           aria-label="Position in % along the colorbar"
-          title="Position along the colorbar or colormap: 0% at the start, 100% at the end"
           value={Number.isFinite(k.t) ? Math.round(k.t * 1000) / 10 : ''}
           onFocus={reset}
           onCommit={setPosition}
@@ -82,13 +81,12 @@ function TickRow({ w, tick: k }: { w: WorkspaceContext; tick: TickWithT }) {
       <td>
         <Btn
           variant="subtle"
-          className="icon"
+          icon="close"
+          className="icon-only"
           title="Remove tick"
           aria-label="Remove tick"
           onClick={() => w.commit((p) => (p.colorbar.ticks = p.colorbar.ticks.filter((x) => x.id !== k.id)))}
-        >
-          ×
-        </Btn>
+        />
       </td>
     </tr>
   );
@@ -102,7 +100,7 @@ export function TickTable({ w, ticks }: { w: WorkspaceContext; ticks: TickWithT[
       <thead>
         <tr>
           <th>Tick value</th>
-          <th title="0% at the start of the colorbar (or colormap), 100% at its end">Position</th>
+          <th title="Position along the colorbar or colormap: 0% at the start, 100% at the end">Position</th>
           <th />
         </tr>
       </thead>

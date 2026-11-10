@@ -160,14 +160,17 @@ test('the delete button says Clear on the last panel and asks before removing', 
   vi.unstubAllGlobals();
 });
 
-test('other pages: hidden when empty, then one chip per page that goes to the page; page note on multi-page files', () => {
+test('other pages: empty list, then one chip per page that goes to the page; page note on multi-page files', () => {
   const { project, goTo } = setup({ pageCount: 3 });
   assert.equal(document.getElementById('panel-page-note')!.textContent, 'on page 1');
   const box = document.getElementById('other-pages')!;
-  assert.equal(box.hidden, true);
+  // An empty .chip-list collapses (CSS :empty), so it must have no children at all.
+  assert.equal(box.childNodes.length, 0);
+  assert.equal(box.getAttribute('aria-label'), 'Other pages');
+  assert.equal(document.getElementById('panel-list')!.getAttribute('aria-label'), 'Panels');
   project.panels.push(createPanel('B', 3, 'heatmap'), createPanel('A', 2, 'heatmap'), createPanel('C', 3, 'heatmap'));
   notify();
-  assert.equal(box.hidden, false);
+  assert.equal(box.childNodes.length, 2);
   const links = [...box.querySelectorAll('button')];
   assert.deepEqual(
     links.map((b) => b.textContent),

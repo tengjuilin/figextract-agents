@@ -73,7 +73,7 @@ test('state snapshot is plain JSON with readiness', () => {
     tool: 'heatmap',
     mode: null,
     activePanelId: p.id,
-    problems: { [p.id]: 'Set the heatmap grid corners.' },
+    problems: { [p.id]: 'Place the grid corners.' },
     canUndo: false,
     canRedo: false,
     openQuestions: 0,

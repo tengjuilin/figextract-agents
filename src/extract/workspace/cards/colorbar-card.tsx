@@ -12,6 +12,7 @@ import {
   Check,
   Field,
   Fields,
+  IconBtn,
   MainStep,
   Options,
   SplitActions,
@@ -22,23 +23,35 @@ import { useWorkspace } from '../../react/use-workspace.ts';
 import { notify } from '../store.ts';
 import { BarMatch, lowAtStartOf, useBarMatch } from './bar-match.tsx';
 import { BarStrip } from './bar-strip.tsx';
-import { chooseColormap, placeColorbarEnds, toggleTickMode, typeTick } from './colorbar-actions.ts';
+import {
+  chooseColormap,
+  hasColorbar,
+  placeColorbarEnds,
+  removeColorbar,
+  toggleTickMode,
+  typeTick,
+} from './colorbar-actions.ts';
 import { MapPicker } from './map-picker.tsx';
 import { TickTable } from './tick-table.tsx';
 
 const SCALES: { value: ColorbarScale; label: string; title?: string }[] = [
-  { value: 'linear', label: 'Linear' },
-  { value: 'log10', label: 'Log₁₀ (tick values are raw numbers)' },
+  { value: 'linear', label: 'Linear', title: 'Values change evenly along the colorbar' },
+  { value: 'log10', label: 'Log10', title: 'Values change by decades; type the tick values as raw numbers, not logs' },
   {
     value: 'piecewise',
-    label: 'Piecewise (uneven ticks)',
-    title: 'Uneven tick values, e.g. a binned colorbar: values are interpolated between neighbouring ticks',
+    label: 'Piecewise',
+    title: 'Uneven tick values, e.g. a binned colorbar: values are interpolated between neighboring ticks',
   },
   {
     value: 'piecewise-log10',
     label: 'Piecewise log10',
-    title: 'Uneven positive tick values over decades: log10 between neighbouring ticks',
+    title: 'Uneven positive tick values over decades: log10 between neighboring ticks',
   },
+];
+
+const TICK_MODES: { value: BarTickMode; label: string }[] = [
+  { value: 'follow', label: 'Move with bar' },
+  { value: 'fixed', label: 'Stay on page' },
 ];
 
 export function ColorbarCard() {
@@ -80,13 +93,23 @@ export function ColorbarCard() {
           </>
         }
         badge={{ id: 'bar-state', text: badge, ok: ready && validTicks >= 2 }}
+        actions={
+          <IconBtn
+            id="bar-remove"
+            variant="danger"
+            icon="trash"
+            label="Remove the colorbar"
+            disabled={!hasColorbar(cb)}
+            onClick={() => removeColorbar(w)}
+          />
+        }
       />
       <MainStep
         id="bar-place"
         variant="primary"
         icon="place"
         hotkey="colorbar"
-        title="Shortcut: {key}"
+        title="Click the two ends of the colorbar. Shortcut: {key}"
         pressed={app.mode?.type === 'colorbar'}
         onClick={() => placeColorbarEnds(w)}
       >
@@ -97,7 +120,7 @@ export function ColorbarCard() {
           id="tick-add"
           icon="plus"
           hotkey="ticks"
-          title="Shortcut: {key}"
+          title="Click tick marks on the colorbar, then type their values. Shortcut: {key}"
           disabled={!cb.start}
           pressed={app.mode?.type === 'tick'}
           onClick={() => toggleTickMode(w)}
@@ -130,13 +153,12 @@ export function ColorbarCard() {
           />
         </Field>
       </Fields>
-      <div id="bar-cmap" className="fields bar-cmap" hidden={!known}>
+      <Fields id="bar-cmap" className="bar-cmap" hidden={!known}>
         <Field as="div" label="Colormap">
           <div id="bar-cmap-pick">
             <MapPicker
               id="bar-cmap-picker"
               label="Colormap"
-              placeholder="Type to search"
               value={cb.colormap?.name ?? null}
               onChoose={(name, typedReversed) =>
                 chooseColormap(w, name, typedReversed || !!w.activePanel().colorbar.colormap?.reversed)
@@ -154,7 +176,7 @@ export function ColorbarCard() {
               w.commit((p) => (p.colorbar.colormap = { ...p.colorbar.colormap!, reversed: on }));
           }}
         />
-      </div>
+      </Fields>
       <BarStrip w={w} panel={panel} />
       <BarMatch
         match={match}
@@ -162,49 +184,51 @@ export function ColorbarCard() {
         onUse={(m) => w.commit((p) => (p.colorbar.colormap = { name: m.name, reversed: m.reversed }))}
       />
       <TickTable w={w} ticks={ticks} />
-      <Field label="Scale">
-        <BoundSelect
-          id="bar-scale"
-          value={cb.scale}
-          options={SCALES}
-          onChange={(v) => w.commit((p) => (p.colorbar.scale = v as ColorbarScale))}
-        />
-      </Field>
+      <Fields>
+        <Field label="Scale" title="How tick values map to positions along the colorbar">
+          <BoundSelect
+            id="bar-scale"
+            value={cb.scale}
+            options={SCALES}
+            onChange={(v) => w.commit((p) => (p.colorbar.scale = v as ColorbarScale))}
+          />
+        </Field>
+      </Fields>
       <Options summary="Options">
         <Fields>
           <Field
-            label="Averaging (± px)"
+            label="Width (± px)"
             title="Colors are averaged over this many pixels on each side of the colorbar line"
           >
+            {/* Any step: rescaling a project (resolution) leaves fractional widths, which step={1} would mark
+                invalid; the arrows still step by 1. Shown to one decimal. */}
             <BoundInput
               key={panel.id}
               id="bar-halfwidth"
               kind="number"
               min={0}
               max={50}
-              step={1}
+              step="any"
               value={Math.round(cb.halfWidth * 10) / 10}
               {...halfWidth}
             />
           </Field>
-        </Fields>
-        <Field
-          label="When dragging an end, ticks"
-          title="What happens to the ticks when you drag an end of the colorbar: move with the bar and keep their proportions, or stay on their marks on the page. Drag the line itself to move everything together."
-        >
-          <select
-            id="bar-tick-mode"
-            value={app.barTickMode}
-            onChange={(e) => {
-              // Read by interact.ts on the next drag; nothing to redraw.
-              app.barTickMode = e.target.value as BarTickMode;
-              notify({ light: true });
-            }}
+          <Field
+            label="Ticks on end drag"
+            title="What happens to the ticks when you drag an end of the colorbar: move with the bar and keep their proportions, or stay on their marks on the page. Drag the line itself to move everything together."
           >
-            <option value="follow">Move with the bar (keep proportions)</option>
-            <option value="fixed">Stay in place on the page</option>
-          </select>
-        </Field>
+            <BoundSelect
+              id="bar-tick-mode"
+              value={app.barTickMode}
+              options={TICK_MODES}
+              onChange={(v) => {
+                // Read by interact.ts on the next drag; nothing to redraw.
+                app.barTickMode = v as BarTickMode;
+                notify({ light: true });
+              }}
+            />
+          </Field>
+        </Fields>
       </Options>
     </>
   );

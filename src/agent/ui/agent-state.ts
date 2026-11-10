@@ -64,6 +64,13 @@ export function eventLine(type: RunEventType, data: RunEventData, decided: boole
   return null;
 }
 
+/** The badge of the card: plain while off or running, green once a run finished ("Done · "). */
+export function runBadge(s: RunState): { text: string; ok?: boolean } {
+  if (s.running) return { text: 'running' };
+  if (s.prefix.startsWith('Done')) return { text: 'done', ok: true };
+  return { text: 'off' };
+}
+
 export function runReducer(s: RunState, a: RunAction): RunState {
   switch (a.type) {
     case 'start':
@@ -106,9 +113,16 @@ export function statusLine(s: RunState, now: number) {
 
 export const pct = (v: number | null | undefined) => (v === null || v === undefined ? '?' : `${Math.round(v * 100)}%`);
 
+/** An enum answer as a button label: "not_flagged" → "Not flagged". */
+export const answerLabel = (a: string) => {
+  const words = a.replaceAll('_', ' ');
+  return words.charAt(0).toUpperCase() + words.slice(1);
+};
+
+/** A suggested answer in running text: enum words with spaces ("not flagged"), objects as "rows 9, cols 12". */
 export function answerText(a: unknown) {
   return typeof a === 'string'
-    ? a
+    ? a.replaceAll('_', ' ')
     : a && typeof a === 'object'
       ? Object.entries(a as object)
           .map(([k, v]) => `${k} ${v}`)

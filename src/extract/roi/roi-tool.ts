@@ -157,14 +157,17 @@ export function setupRoiTool(ws: Workspace) {
       ),
     hasCalibration: (p) => p.rois.length > 0 || !!p.scale,
     sections: ['sec-rois', 'sec-scale', 'sec-roi-results'],
-    gridTexts: ['Click the outer top-left corner of the grid of boxes.', 'Click the outer bottom-right corner.'],
+    gridTexts: [
+      'Click the outer top-left corner of the grid of boxes.',
+      'Click the outer bottom-right corner of the grid.',
+    ],
     modeTexts: {
       ellipse: ['Drag to draw an ellipse. Hold Shift for a circle.'],
       rect: ['Drag to draw a rectangle. Hold Shift for a square.'],
       polygon: (m) =>
         m.points.length < 3
-          ? `Click to add points (${m.points.length} so far).`
-          : 'Click the first point, double-click or press Enter to close. Backspace removes the last point.',
+          ? `Click to add the polygon's points (${m.points.length} so far).`
+          : 'Click the first point, double-click or press Enter to close the polygon. Backspace removes the last point.',
       scale: SCALE_MODE_TEXTS,
     },
     onModeChange,

@@ -3,7 +3,7 @@
 // Read in render, write in handlers (docs/react.md, "The card pattern").
 import { useLayoutEffect, useRef } from 'react';
 import type { ScaleUnit } from '../types/index.ts';
-import { BoundInput, BoundSelect, CardHead, Fields, Hint, IconBtn, InputPair, MainStep } from '../ui/index.ts';
+import { BoundInput, BoundSelect, CardHead, Field, Fields, Hint, IconBtn, InputPair, MainStep } from '../ui/index.ts';
 import { useBoundNumber } from './react/use-bound.ts';
 import { useWorkspace } from './react/use-workspace.ts';
 import { scaleDefaults, scaleFocus } from './scale-bar.ts';
@@ -47,7 +47,12 @@ export function ScaleCard() {
       <CardHead
         title="Scale"
         tag="optional"
-        badge={{ id: 'scale-state', text: sc ? `${sc.length} ${sc.unit}` : 'pixels', ok: !!sc }}
+        badge={{
+          id: 'scale-state',
+          text: sc ? `${sc.length} ${sc.unit}` : 'pixels',
+          // An optional card: its fallback (pixels) is shown plain (docs/ui.md, section 5).
+          ok: sc ? true : undefined,
+        }}
         actions={
           <IconBtn
             id="scale-clear"
@@ -69,8 +74,7 @@ export function ScaleCard() {
         Measure scale bar
       </MainStep>
       <Fields>
-        <div className="field">
-          <label htmlFor="scale-length">Length</label>
+        <Field as="div" label="Length" htmlFor="scale-length">
           <InputPair>
             <BoundInput
               key={panel.id}
@@ -94,7 +98,7 @@ export function ScaleCard() {
               }}
             />
           </InputPair>
-        </div>
+        </Field>
       </Fields>
       <Hint id="scale-info">{sc ? `${px.toFixed(1)} px = ${sc.length} ${sc.unit}` : ''}</Hint>
     </>

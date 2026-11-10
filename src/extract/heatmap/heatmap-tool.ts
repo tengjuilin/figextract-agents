@@ -18,7 +18,7 @@ export function setupHeatmapTool(ws: Workspace) {
 
   ws.addTool({
     kind: 'heatmap',
-    label: 'heatmap',
+    label: 'Heatmap',
     title: 'FigExtract Agents · Heatmap',
     computeResult: (panel, image) => extractPanel(image, panel),
     resultKey: (panel) => [gridGeometry(panel.grid), panel.colorbar, panel.settings],

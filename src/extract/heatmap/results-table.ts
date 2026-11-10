@@ -2,6 +2,7 @@ import { rgbToHex } from 'colormeris';
 import type { Cell, HeatmapCell, HeatmapResult, Panel, Rgb } from '../../types/index.ts';
 import { effectiveLabels } from '../project/project.ts';
 import { formatNumber } from '../project/project-files.ts';
+import { joinSummary, pct } from '../results-summary.ts';
 
 // The heatmap Results card's table, built with the DOM (up to 1000 × 1000 cells, with a hover highlight
 // that adds a class to one td), so the React card hosts it through a ref instead of rendering it. Also the
@@ -34,15 +35,15 @@ export function heatmapSummary(res: HeatmapResult, maxDeltaE: number): string {
       }
   const n = res.counts;
   const flagged = n.flagged + n.offMap;
-  return (
-    `${res.rows} × ${res.cols} cells` +
-    (lo <= hi ? ` · range ${formatNumber(lo)} – ${formatNumber(hi)}` : '') +
-    (res.bins ? ` · binned colorbar (${res.bins.length} bins), bin middles` : '') +
-    (n.empty ? ` · ${n.empty} without a dot (blank)` : '') +
-    (n.offMap ? ` · ${n.offMap} not on the colorbar (blank)` : '') +
-    (n.open ? ` · ${n.open} bounds (≤ / ≥)` : '') +
-    ` · ${flagged ? `${flagged} flagged (ΔE > ${maxDeltaE} or off the colorbar) — outlined in red` : 'no flagged cells'}`
-  );
+  return joinSummary([
+    `${res.rows} × ${res.cols} cells`,
+    lo <= hi && `range ${formatNumber(lo)} – ${formatNumber(hi)}`,
+    res.bins ? `binned colorbar (${res.bins.length} bins), bin middles` : false,
+    n.empty > 0 && `${n.empty} without a dot (blank)`,
+    n.offMap > 0 && `${n.offMap} not on the colorbar (blank)`,
+    n.open > 0 && `${n.open} bounds (≤ / ≥)`,
+    flagged > 0 && `${flagged} flagged (${pct(flagged, res.rows * res.cols)}, ΔE > ${maxDeltaE} or off the colorbar)`,
+  ]);
 }
 
 function th(text: string, rowhead = false) {

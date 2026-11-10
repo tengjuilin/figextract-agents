@@ -46,6 +46,11 @@ export function GridCard() {
       ? `${Math.round(size.width)} × ${Math.round(size.height)} px`
       : `${g.rows} × ${g.cols}`;
   const placeLabel = plotArea ? 'Place plot area' : heatmap && dots ? 'Place corner dots' : 'Place grid corners';
+  const placeTitle = plotArea
+    ? 'Click the corners of the plot area. Shortcut: {key}'
+    : heatmap && dots
+      ? 'Click the centers of the top-left and bottom-right dots. Shortcut: {key}'
+      : 'Click the outer corners of the heatmap. Shortcut: {key}';
 
   const rows = useBoundNumber((p, v) => {
     p.grid.rows = clampCount(v);
@@ -95,13 +100,13 @@ export function GridCard() {
           </>
         }
         tag={roi ? 'optional' : undefined}
-        badge={{ id: 'grid-state', text: badge, ok: !!g.corners }}
+        badge={{ id: 'grid-state', text: badge, ok: g.corners ? true : roi ? undefined : false }}
         actions={
           <IconBtn
             id="grid-clear"
             variant="danger"
             icon="trash"
-            label="Remove the grid or plot area"
+            label={plotArea ? 'Remove the plot area' : 'Remove the grid'}
             disabled={!g.corners}
             onClick={remove}
           />
@@ -112,14 +117,15 @@ export function GridCard() {
         variant="primary"
         icon="place"
         hotkey="grid"
-        title="Shortcut: {key}"
+        title={placeTitle}
         pressed={app.mode?.type === 'grid'}
         onClick={() => w.setMode(app.mode?.type === 'grid' ? null : 'grid')}
       >
         <span id="grid-place-label">{placeLabel}</span>
       </MainStep>
-      <Fields hidden={!heatmap}>
-        <Field label="Click on" title={ANCHOR_TITLE}>
+      {/* One group; each field hides itself for the tools it does not belong to. */}
+      <Fields hidden={plotArea}>
+        <Field label="Click on" title={ANCHOR_TITLE} hidden={!heatmap}>
           <BoundSelect
             id="grid-anchor"
             value={g.anchor}
@@ -130,8 +136,6 @@ export function GridCard() {
             onChange={(v) => switchAnchor(v as GridAnchor)}
           />
         </Field>
-      </Fields>
-      <Fields hidden={plotArea}>
         <Field label="Rows">
           <BoundInput key={panel.id} id="grid-rows" kind="number" min={1} max={1000} value={g.rows} {...rows} />
         </Field>
@@ -159,32 +163,30 @@ export function GridCard() {
               }
             />
           </Field>
+          <Field
+            id="grid-fraction-field"
+            label="Sampled area"
+            title={
+              dots
+                ? "Share of each dot's own radius that is averaged; lower it to stay clear of the dot's edge"
+                : 'Share of each cell that is averaged around its center; lower it to stay clear of cell borders'
+            }
+          >
+            <span className="range-row">
+              <BoundInput
+                key={panel.id}
+                id="grid-fraction"
+                kind="range"
+                min={0.1}
+                max={1}
+                step={0.05}
+                value={g.sampleFraction}
+                {...fraction}
+              />
+              <output id="grid-fraction-out">{`${Math.round(g.sampleFraction * 100)}%`}</output>
+            </span>
+          </Field>
         </Fields>
-        <label
-          className="field"
-          id="grid-fraction-field"
-          hidden={!heatmap}
-          title={
-            dots
-              ? "Share of each dot's own radius that is averaged; lower it to stay clear of the dot's edge"
-              : 'Share of each cell that is averaged around its center; lower it to stay clear of cell borders'
-          }
-        >
-          Sampled area
-          <span className="range-row">
-            <BoundInput
-              key={panel.id}
-              id="grid-fraction"
-              kind="range"
-              min={0.1}
-              max={1}
-              step={0.05}
-              value={g.sampleFraction}
-              {...fraction}
-            />
-            <output id="grid-fraction-out">{`${Math.round(g.sampleFraction * 100)}%`}</output>
-          </span>
-        </label>
         <Check
           id="grid-rect"
           label="Keep rectangular when dragging corners"

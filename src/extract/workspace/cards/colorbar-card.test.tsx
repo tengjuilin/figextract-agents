@@ -27,6 +27,7 @@ beforeEach(() => {
 
 function setup() {
   const log: string[] = [];
+  const toasts: string[] = [];
   const project = createProject('heatmap');
   project.activePanelId = project.panels[0].id;
   const app = {
@@ -44,6 +45,7 @@ function setup() {
     activePanel: () => project.panels[0],
     resultFor: () => ({ error: 'none' }),
     newTickId: () => `t${seq++}`,
+    toast: (m: string) => toasts.push(m),
     setMode: (m: string | null) => {
       app.mode = m ? { type: m } : null;
       log.push(`mode:${m}`);
@@ -70,7 +72,7 @@ function setup() {
     </StrictMode>,
   );
   const cb = project.panels[0].colorbar;
-  return { log, project, app, cb, w };
+  return { log, project, app, cb, w, toasts };
 }
 
 const el = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
@@ -90,7 +92,9 @@ test('empty: badge, disabled buttons, hidden strip, hidden table, no match line'
   assert.equal(el<HTMLButtonElement>('tick-add').disabled, true);
   assert.equal(el<HTMLButtonElement>('tick-type').disabled, true);
   assert.equal(el<HTMLCanvasElement>('bar-strip').hidden, true);
-  assert.equal(el('bar-match').hidden, true);
+  // The live region stays in the DOM, empty (CSS collapses it).
+  assert.equal(el('bar-match').textContent, '');
+  assert.equal(el<HTMLButtonElement>('bar-remove').disabled, true);
   assert.equal(document.querySelector<HTMLElement>('table.ticks')!.hidden, true);
   assert.equal(el('bar-cmap').hidden, true);
   assert.equal(el<HTMLSelectElement>('bar-source').value, 'figure');
@@ -313,7 +317,7 @@ test('back to the figure drops the colormap; the picker hides', () => {
   assert.equal(el('bar-cmap').hidden, true);
 });
 
-test('scale select commits; Averaging clamps to 0..50 on commit; Options stays open across renders', () => {
+test('scale select commits; Width clamps to 0..50 on commit; Options stays open across renders', () => {
   const { cb, log } = setup();
   fireEvent.change(el('bar-scale'), { target: { value: 'piecewise' } });
   assert.equal(cb.scale, 'piecewise');
@@ -358,7 +362,7 @@ test('focusTick (interact.ts) focuses a row that exists, or the row of the next 
   assert.equal(document.activeElement, valueInput(1));
 });
 
-test('the reference match line: levels, direction flip from the ticks, and Use its colors', () => {
+test('the reference match line: levels, direction flip from the ticks, and Use colormap colors', () => {
   cleanup();
   const used: unknown[] = [];
   const m = {
@@ -373,18 +377,25 @@ test('the reference match line: levels, direction flip from the ticks, and Use i
   };
   const { rerender } = render(<BarMatch match={m} lowAtStart={false} onUse={(x) => used.push(x)} />);
   const line = document.getElementById('bar-match')!;
-  assert.equal(line.hidden, false);
-  assert.equal(line.className, 'bar-match hint exact');
+  assert.equal(line.className, 'hint bar-match exact');
+  assert.equal(line.getAttribute('aria-live'), 'polite');
+  assert.equal(line.querySelector('code')!.title, '');
   assert.equal(line.querySelector('code')!.textContent, 'viridis_r');
   assert.match(line.textContent!, /^Reference colormap: viridis_r \(.*, ΔE 0\.4\)\. Same colors: cividis_r, plasma\./);
   assert.equal(line.querySelector('a'), null);
-  fireEvent.click(screen.getByText('Use its colors'));
+  const use = screen.getByRole('button', { name: 'Use colormap colors' });
+  assert.equal(use.dataset.icon, 'layers');
+  fireEvent.click(use);
   assert.deepEqual(used, [m]);
+  // Ticks that do not say the direction yet: it comes from the first end, said in the name's tooltip.
+  rerender(<BarMatch match={m} lowAtStart={null} onUse={() => {}} />);
+  assert.equal(line.querySelector('code')!.textContent, 'viridis');
+  assert.match(line.querySelector('code')!.title, /first end/);
   rerender(<BarMatch match={{ ...m, level: 'none' }} lowAtStart={null} onUse={() => {}} />);
   assert.match(line.textContent!, /^No known colormap matches this colorbar \(closest: viridis, ΔE 0\.4\)\. $/);
-  assert.equal(screen.queryByText('Use its colors'), null);
+  assert.equal(screen.queryByText('Use colormap colors'), null);
   rerender(<BarMatch match={null} lowAtStart={null} onUse={() => {}} />);
-  assert.equal(document.getElementById('bar-match')!.hidden, true);
+  assert.equal(document.getElementById('bar-match')!.textContent, '');
 });
 
 test('the tick mode select is app state: interact.ts reads app.barTickMode, not the DOM', () => {
@@ -398,4 +409,50 @@ test('the tick mode select is app state: interact.ts reads app.barTickMode, not 
   assert.equal(el<HTMLSelectElement>('bar-tick-mode').value, 'fixed');
   // A setting of the drag, not of the project: no history.
   assert.deepEqual(log, []);
+});
+
+test('Remove the colorbar: one undo step back to an empty bar, keeps the scale, leaves tick mode, toasts', () => {
+  const { cb, log, app, toasts } = setup();
+  const btn = el<HTMLButtonElement>('bar-remove');
+  assert.equal(btn.getAttribute('aria-label'), 'Remove the colorbar');
+  assert.equal(btn.dataset.icon, 'trash');
+  assert.ok(btn.classList.contains('danger'));
+  place(cb);
+  cb.scale = 'log10';
+  cb.halfWidth = 4;
+  cb.ticks = [{ id: 'a', x: 0, y: 0, value: 1 }];
+  cb.colormap = { name: 'viridis', reversed: true };
+  notify();
+  assert.equal(btn.disabled, false);
+  act(() => el('tick-add').click());
+  log.length = 0;
+  act(() => btn.click());
+  assert.deepEqual(log, ['mode:null', 'history', 'full']);
+  assert.equal(app.mode, null);
+  assert.deepEqual(
+    { start: cb.start, end: cb.end, ticks: cb.ticks, colormap: cb.colormap, scale: cb.scale, halfWidth: cb.halfWidth },
+    { start: null, end: null, ticks: [], colormap: null, scale: 'log10', halfWidth: 4 },
+  );
+  assert.deepEqual(toasts, ['Colorbar removed. Undo brings it back.']);
+  assert.equal(el('bar-state').textContent, 'not placed');
+  assert.equal(btn.disabled, true);
+});
+
+test('labels: plain scale options, Width (± px), Ticks on end drag', () => {
+  setup();
+  assert.deepEqual(
+    [...el<HTMLSelectElement>('bar-scale').options].map((o) => o.textContent),
+    ['Linear', 'Log10', 'Piecewise', 'Piecewise log10'],
+  );
+  assert.deepEqual(
+    [...el<HTMLSelectElement>('bar-tick-mode').options].map((o) => [o.value, o.textContent]),
+    [
+      ['follow', 'Move with bar'],
+      ['fixed', 'Stay on page'],
+    ],
+  );
+  assert.equal(el('bar-halfwidth').closest('label')!.firstChild!.textContent, 'Width (± px)');
+  assert.equal(el('bar-tick-mode').closest('label')!.firstChild!.textContent, 'Ticks on end drag');
+  assert.equal(el('bar-scale').closest('.fields') !== null, true);
+  assert.equal(el<HTMLInputElement>('bar-halfwidth').step, 'any');
 });

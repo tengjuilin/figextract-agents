@@ -8,9 +8,11 @@ import type {
   ProfileSample,
   Project,
   RoiResult,
+  RoiStats,
   ScaleUnit,
 } from '../../types/index.ts';
 import { FLAG_DELTA_E, FLAG_HIGH, FLAG_LOW, lengthPerPixel } from '../map/field.ts';
+import { metricValue, roiTableModel } from '../roi/quantify.ts';
 import { boxLabel, effectiveLabels, parseProject, type Raw, serializeProject } from './project.ts';
 
 /** A panel with its result, as the exports take them. */
@@ -45,16 +47,32 @@ export function csvEscape(v: unknown) {
 
 export const csvLine = (cells: unknown[]) => cells.map(csvEscape).join(',');
 
+// A Results card's table as rows of cells (header row first), so its Download CSV and its Copy table
+// write the same layout: csvText for the file, tsvText for the clipboard.
+export type TextTable = unknown[][];
+
+/** A table as CSV, one line per row, with a final newline. */
+export function csvText(table: TextTable) {
+  return `${table.map(csvLine).join('\n')}\n`;
+}
+
+/** A table as tab-separated text for a spreadsheet; a tab or line break inside a cell becomes a space. */
+export function tsvText(table: TextTable) {
+  return table.map((cells) => cells.map((c) => String(c ?? '').replace(/[\t\r\n]+/g, ' ')).join('\t')).join('\n');
+}
+
 // Matrix layout: first column row labels, header row column labels.
-export function toWideCsv(panel: Panel, result: HeatmapResult) {
+export function heatmapTable(panel: Panel, result: HeatmapResult): TextTable {
   const rowLabels = effectiveLabels(panel.grid.rowLabels, result.rows, 'R');
   const colLabels = effectiveLabels(panel.grid.colLabels, result.cols, 'C');
-  const lines = [csvLine(['row\\col', ...colLabels])];
-  result.cells.forEach((row, r) => {
-    lines.push(csvLine([rowLabels[r], ...row.map((c) => formatNumber(c.value))]));
-  });
-  return lines.join('\n') + '\n';
+  return [
+    ['row\\col', ...colLabels],
+    ...result.cells.map((row, r) => [rowLabels[r], ...row.map((c) => formatNumber(c.value))]),
+  ];
 }
+
+export const toWideCsv = (panel: Panel, result: HeatmapResult) => csvText(heatmapTable(panel, result));
+export const toWideTsv = (panel: Panel, result: HeatmapResult) => tsvText(heatmapTable(panel, result));
 
 // Tidy layout with diagnostics, one line per cell. `items` is [{panel, result}].
 // status: ok, flagged, clamped (past an end of the bar), off-map (no
@@ -116,6 +134,42 @@ Load this zip back into FigExtract Agents to review or re-run the extraction.
 `;
 
 const pageImagePath = (page: number | string) => `source/page-${page}.png`;
+
+// The ROI Results table's names of the measurements (its top-left cell).
+export const ROI_METRIC_NAMES: Record<keyof RoiStats, string> = {
+  sum: 'Total signal',
+  mean: 'Mean over region',
+  max: 'Max',
+  meanSignal: 'Mean over signal pixels',
+  signalPx: 'Signal area (px)',
+  areaPx: 'Region area (px)',
+  flaggedPx: 'Flagged area (px)',
+  sumArea: 'Total signal × area',
+  signalArea: 'Signal area',
+  area: 'Region area',
+};
+
+// The ROI Results table: one measurement, one row per box (or "Image"), one column per region; a region
+// with no copy in a box (or a scaled measurement without a scale bar) leaves its cell empty.
+export function roiTable(panel: Panel, result: RoiResult, metric: keyof RoiStats): TextTable {
+  const model = roiTableModel(panel, result);
+  const table: TextTable = [[ROI_METRIC_NAMES[metric], ...model.rois.map((r) => r.name)]];
+  for (const row of model.rows)
+    table.push([
+      row.label,
+      ...model.rois.map((roi) => {
+        const r = row.cells.get(roi.id);
+        const v = r ? metricValue(r.stats, metric) : null;
+        return v === null ? '' : formatNumber(v);
+      }),
+    ]);
+  return table;
+}
+
+export const roiWideCsv = (panel: Panel, result: RoiResult, metric: keyof RoiStats) =>
+  csvText(roiTable(panel, result, metric));
+export const roiWideTsv = (panel: Panel, result: RoiResult, metric: keyof RoiStats) =>
+  tsvText(roiTable(panel, result, metric));
 
 // Region statistics, one line per region copy. `items` is [{panel, result}]
 // with results from quantifyPanel.
@@ -185,16 +239,19 @@ const mapAxisNames = (result: MapField) => [
 
 // Matrix layout: header row of x at bin centres, first column y at bin centres,
 // rows top to bottom as on the page.
-export function mapMatrixCsv(panel: Panel, result: MapField) {
+export function mapMatrixTable(result: MapField): TextTable {
   const [xn, yn] = mapAxisNames(result);
-  const lines = [csvLine([`${yn}\\${xn}`, ...result.xs.map((x) => formatNumber(x))])];
+  const table: TextTable = [[`${yn}\\${xn}`, ...result.xs.map((x) => formatNumber(x))]];
   for (let r = 0; r < result.rows; r++) {
     const row = [formatNumber(result.ys[r])];
     for (let c = 0; c < result.cols; c++) row.push(formatNumber(result.values[r * result.cols + c]));
-    lines.push(row.join(','));
+    table.push(row);
   }
-  return lines.join('\n') + '\n';
+  return table;
 }
+
+export const mapMatrixCsv = (_panel: Panel, result: MapField) => csvText(mapMatrixTable(result));
+export const mapMatrixTsv = (_panel: Panel, result: MapField) => tsvText(mapMatrixTable(result));
 
 // Tidy layout with diagnostics, one line per bin. `items` is [{panel, result}].
 export function mapLongCsv(items: ResultItem[]) {

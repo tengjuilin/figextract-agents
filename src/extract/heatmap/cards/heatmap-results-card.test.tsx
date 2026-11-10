@@ -7,10 +7,11 @@ import { StrictMode } from 'react';
 import { afterEach, beforeEach, test, vi } from 'vitest';
 import type { HeatmapCell, HeatmapResult, Panel, Workspace, WorkspaceContext } from '../../../types/index.ts';
 import { createProject } from '../../project/project.ts';
+import { toWideTsv } from '../../project/project-files.ts';
 import { WsContext } from '../../react/use-workspace.ts';
 import { notify } from '../../workspace/store.ts';
 import { highlightTableCell } from '../results-table.ts';
-import { HeatmapResultsCard, toTsv } from './heatmap-results-card.tsx';
+import { HeatmapResultsCard } from './heatmap-results-card.tsx';
 
 afterEach(() => {
   cleanup();
@@ -89,7 +90,7 @@ const td = (r: number, c: number) => document.querySelector<HTMLElement>(`td[dat
 test('shows the summary and a table of values with flags and off-map cells', () => {
   setup();
   assert.match($('result-summary').textContent!, /^2 × 2 cells · range 1 – 3 · 1 not on the colorbar \(blank\)/);
-  assert.match($('result-summary').textContent!, /2 flagged/);
+  assert.match($('result-summary').textContent!, / · 2 flagged \(50\.0%, ΔE > \d+ or off the colorbar\)$/);
   assert.equal(document.querySelectorAll('#result-table td').length, 4);
   assert.equal(td(0, 0).textContent, '1');
   assert.ok(td(0, 1).classList.contains('flagged'));
@@ -152,7 +153,7 @@ test('Copy table writes tab-separated text to the clipboard and toasts', async (
   await act(async () => {
     fireEvent.click($('copy-tsv'));
   });
-  assert.equal(written[0], toTsv(panel, state.res as HeatmapResult));
+  assert.equal(written[0], toWideTsv(panel, state.res as HeatmapResult));
   assert.ok(written[0].includes('\t'));
   assert.deepEqual(toasts, ['Table copied — paste into a spreadsheet.']);
   vi.stubGlobal('navigator', { clipboard: { writeText: async () => Promise.reject(new Error('no')) } });
@@ -162,13 +163,14 @@ test('Copy table writes tab-separated text to the clipboard and toasts', async (
   assert.equal(toasts.at(-1), 'Clipboard is not available here.');
 });
 
-test('Reconstruct toggles app.showRecon and redraws', () => {
+test('Show reconstruction toggles app.showRecon and redraws', () => {
   const { app } = setup();
   assert.equal($('toggle-recon').checked, false);
   fireEvent.click($('toggle-recon'));
   assert.equal(app.showRecon, true);
   assert.equal($('toggle-recon').checked, true);
   assert.ok(document.querySelector('.card-head > .check'));
+  assert.equal(document.querySelector('.card-head > .check')!.textContent!.trim(), 'Show reconstruction');
 });
 
 test("another tool's panel active: the card renders without reading results", () => {

@@ -100,21 +100,21 @@ export function PanelsCard() {
           </>
         }
       />
-      <ChipList id="panel-list">
+      <ChipList id="panel-list" aria-label="Panels">
         {here.map((p) => (
           <Chip key={p.id} pressed={p === active} {...status(p)} onClick={() => select(p)}>
             {p.name || '(unnamed)'}
           </Chip>
         ))}
       </ChipList>
-      <div id="other-pages" className="other-pages" hidden={others.length === 0}>
-        <span className="hint">Other pages:</span>
+      {/* Links to the other pages' panels; empty (and collapsed by CSS) on a single page. */}
+      <ChipList id="other-pages" aria-label="Other pages">
         {others.map(([n, names]) => (
           <Chip key={n} title={`Go to page ${n}`} onClick={() => void w.goToPage(n)}>
             {`Page ${n}: ${names.join(', ')}`}
           </Chip>
         ))}
-      </div>
+      </ChipList>
       <Field label="Name">
         <BoundInput key={active.id} id="panel-name" ref={nameEl} spellCheck={false} value={active.name} {...rename} />
       </Field>

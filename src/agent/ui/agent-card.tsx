@@ -9,16 +9,17 @@ import { cellSamplePolygon } from '../../core/grid.ts';
 import { useSectionVisible, useWorkspace } from '../../extract/react/use-workspace.ts';
 import { store } from '../../extract/workspace/store.ts';
 import type { AgentSettings, FigExtractApi, Panel, Question, SettingsUi, Workspace } from '../../types/index.ts';
-import { Badge, BoundInput, BoundSelect, Btn, Field, Fields, Hint, useSettings } from '../../ui/index.ts';
+import { BoundInput, BoundSelect, Btn, CardHead, Field, Fields, Hint, MainStep, useSettings } from '../../ui/index.ts';
 import { DEFAULT_DECISION_MODEL } from '../decide.ts';
 import { DEFAULT_LLM, parsePages } from '../llm.ts';
 import { loadOpenRouterSdk, makeDecisionClient, makeOpenRouterClient } from '../openrouter-client.ts';
 import { createAgentRunner } from '../runner.ts';
 import { agentDeps, setAgentDeps } from './agent-deps.ts';
 import { type ReviewHandlers, ReviewList } from './agent-review.tsx';
-import { errorText, initialRunState, type RunState, runReducer, statusLine } from './agent-state.ts';
+import { errorText, initialRunState, type RunState, runBadge, runReducer, statusLine } from './agent-state.ts';
 import { loadModelLists, type ModelInfo, useModelLists } from './model-lists.ts';
 
+// The mode names are also the buttons' icons.
 const MODES: [AgentSettings['mode'], string, string][] = [
   ['agent', 'Agent only', 'Agent only: the LLM finds, places and checks everything itself'],
   [
@@ -33,7 +34,8 @@ type PagesMode = 'current' | 'all' | 'range';
 const options = (models: ModelInfo[]) => models.map((m) => <option key={m.id} value={m.id} label={m.name || m.id} />);
 
 // The status line owns the 100 ms clock while a run goes, so the log and review list do not re-render with it.
-function RunStatus({ run, loaded }: { run: RunState; loaded: boolean }) {
+// Before the first run it says what keeps Run disabled.
+function RunStatus({ run, loaded, hasKey }: { run: RunState; loaded: boolean; hasKey: boolean }) {
   const [, tick] = useReducer((n: number) => n + 1, 0);
   const visible = useSectionVisible('sec-agent');
   const ticking = run.running && visible;
@@ -42,8 +44,11 @@ function RunStatus({ run, loaded }: { run: RunState; loaded: boolean }) {
     const id = setInterval(tick, 100);
     return () => clearInterval(id);
   }, [ticking]);
+  const idle = !loaded ? 'Open a file first.' : !hasKey ? 'No API key: set it in Settings → Agent.' : '';
   return (
-    <Hint id="agent-status">{run.startedAt ? statusLine(run, Date.now()) : loaded ? '' : 'Open a file first.'}</Hint>
+    <Hint id="agent-status" aria-live="polite">
+      {run.startedAt ? statusLine(run, Date.now()) : idle}
+    </Hint>
   );
 }
 
@@ -63,7 +68,11 @@ export function AgentCard() {
   const decisionMode = agent.mode === 'decision';
   const hasKeyOrProxy = !!(agent.key || agent.base); // a local proxy adds the key itself
   const loaded = !!app.sourceCanvas;
-  const panelName = (id: string) => app.project.panels.find((p) => p.id === id)?.name || id;
+  // A blank name reads "(unnamed)", as in the Panels card.
+  const panelName = (id: string) => {
+    const panel = app.project.panels.find((p) => p.id === id);
+    return panel ? panel.name || '(unnamed)' : id;
+  };
 
   // ------------------------------------------------------------ models
 
@@ -164,14 +173,15 @@ export function AgentCard() {
   const handlers: ReviewHandlers = {
     busy: run.running,
     canRun: hasKeyOrProxy,
+    activeId: app.project.activePanelId,
     panelName,
-    show: async (panelId, q) => {
+    // The chip of an entry: select the panel on its page; a flagged-cell question zooms to that cell.
+    select: async (panelId, q) => {
       const { api } = agentDeps();
       await api.run('select_panel', { panelId });
       const panel = app.project.panels.find((p) => p.id === panelId);
       if (q?.type === 'classify_flagged' && panel?.grid.corners)
         ws.zoomToPoints(cellSamplePolygon(panel.grid, q.evidence.row as number, q.evidence.col as number));
-      else if (panel?.grid.corners) ws.zoomToPoints(panel.grid.corners);
     },
     answer: async (q, value) => {
       const r = await agentDeps().api.run('answer_question', {
@@ -215,35 +225,37 @@ export function AgentCard() {
 
   return (
     <>
-      <div className="card-head">
-        <h2>Agent</h2>
-        <Badge id="agent-badge" text={run.running ? 'running' : 'off'} ok={run.running ? false : undefined} />
-        {/* biome-ignore lint/a11y/useSemanticElements: a button group inside the card head, styled by .segmented */}
-        <div className="head-actions segmented" role="group" aria-label="Agent mode">
-          {MODES.map(([mode, label, title]) => (
-            <Btn
-              key={mode}
-              id={`agent-mode-${mode}`}
-              data-mode={mode}
-              title={title}
-              pressed={(agent.mode === 'decision' ? 'decision' : 'agent') === mode}
-              disabled={run.running}
-              onClick={() => setAgent({ mode })}
-            >
-              {label}
-            </Btn>
-          ))}
-        </div>
-      </div>
-      <Btn
+      <CardHead
+        title="Agent"
+        badge={{ id: 'agent-badge', ...runBadge(run) }}
+        actions={
+          // biome-ignore lint/a11y/useSemanticElements: a button group inside the card head, styled by .segmented
+          <div className="segmented" role="group" aria-label="Agent mode">
+            {MODES.map(([mode, label, title]) => (
+              <Btn
+                key={mode}
+                id={`agent-mode-${mode}`}
+                data-mode={mode}
+                icon={mode}
+                title={title}
+                pressed={(agent.mode === 'decision' ? 'decision' : 'agent') === mode}
+                disabled={run.running}
+                onClick={() => setAgent({ mode })}
+              >
+                {label}
+              </Btn>
+            ))}
+          </div>
+        }
+      />
+      <MainStep
         id="agent-open-settings"
-        block
         icon="settings"
         title="API key, base URL, confidence and step limits (Settings → Agent)"
         onClick={() => agentDeps().settingsUi.open('agent')}
       >
         API key and limits
-      </Btn>
+      </MainStep>
       <Fields>
         <Field label="Agent model" title="OpenRouter model id; needs vision and tool calls">
           <BoundInput
@@ -260,7 +272,7 @@ export function AgentCard() {
           label="Decision model"
           id="agent-decision-field"
           hidden={!decisionMode}
-          title="OpenRouter decision model that takes images (output: decisions); answers one heatmap at a time"
+          title="OpenRouter model that reads page images and answers with decisions (boxes and choices), one heatmap at a time"
         >
           <BoundInput
             id="agent-decision"
@@ -280,43 +292,34 @@ export function AgentCard() {
             options={[
               { value: 'current', label: 'Current page' },
               { value: 'all', label: 'All pages' },
-              { value: 'range', label: 'Pages…' },
+              { value: 'range', label: 'Page range' },
             ]}
           />
         </Field>
         <Field label="Page range" id="agent-range-field" hidden={pagesMode !== 'range'}>
-          <input
-            id="agent-range"
-            type="text"
-            placeholder="e.g. 2-4, 7"
-            spellCheck={false}
-            value={range}
-            onChange={(e) => setRange(e.target.value)}
-          />
+          <BoundInput id="agent-range" placeholder="2-4, 7" spellCheck={false} value={range} onInput={setRange} />
         </Field>
       </Fields>
-      <Btn
+      <MainStep
         id="agent-run"
         variant="primary"
-        block
         icon="play"
         hidden={run.running}
-        disabled={run.running || !loaded || !hasKeyOrProxy}
+        disabled={!loaded || !hasKeyOrProxy}
         title="An LLM finds and calibrates the heatmaps with your own OpenRouter key. Page images and extracted values are sent to OpenRouter and the model providers you pick."
         onClick={() => void start()}
       >
         Run agent
-      </Btn>
-      <Btn
+      </MainStep>
+      <MainStep
         id="agent-stop"
         variant="danger"
-        block
         icon="stop"
         hidden={!run.running}
         onClick={() => abort.current?.abort()}
       >
         Stop agent
-      </Btn>
+      </MainStep>
       <ReviewList questions={questions} rejected={rejected} h={handlers} />
       <ol id="agent-log" className="agent-log" hidden={!run.log.length} ref={logEl}>
         {run.log.map((l) => (
@@ -326,7 +329,7 @@ export function AgentCard() {
           </li>
         ))}
       </ol>
-      <RunStatus run={run} loaded={loaded} />
+      <RunStatus run={run} loaded={loaded} hasKey={hasKeyOrProxy} />
     </>
   );
 }

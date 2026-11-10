@@ -1,6 +1,6 @@
-// The coordinate units select, shared by the Profiles card (X axis, id profile-x) and the Results card
-// (Coordinates, id map-units): options that are not available are disabled, the length option is named by the
-// scale bar's unit, and it shows `value`, what is reported (which may be a fallback from the setting).
+// The Coordinates select, shared by the Profiles card (id profile-x) and the Results card (id map-units); both
+// edit the panel's `map.units`. Options that are not available are disabled, and it shows `value`, what is
+// reported (which may be a fallback from the setting).
 import type { MapUnits, Panel } from '../../../types/index.ts';
 import { BoundSelect } from '../../../ui/index.ts';
 import { lengthPerPixel } from '../field.ts';
@@ -18,14 +18,15 @@ export function UnitsSelect({
   value: string;
   onChange: (units: MapUnits) => void;
 }) {
+  const scaled = lengthPerPixel(panel.scale) !== null;
   return (
     <BoundSelect id={id} value={value} onChange={(v) => onChange(v as MapUnits)}>
-      <option value="axis" disabled={!hasAxis}>
-        Axis
+      <option value="axis" disabled={!hasAxis} title={hasAxis ? undefined : 'Needs ticks on the axes'}>
+        Axis values
       </option>
-      <option value="px">px</option>
-      <option value="length" disabled={lengthPerPixel(panel.scale) === null}>
-        {panel.scale?.unit ?? 'Scale bar'}
+      <option value="px">Pixels</option>
+      <option value="length" disabled={!scaled} title={scaled ? `In ${panel.scale!.unit}` : 'Needs a scale bar'}>
+        Scale bar
       </option>
     </BoundSelect>
   );

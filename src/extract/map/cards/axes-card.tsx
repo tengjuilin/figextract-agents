@@ -4,7 +4,7 @@
 // (docs/react.md, "The card pattern").
 import { useLayoutEffect, useRef } from 'react';
 import type { AxisScale, AxisTick, Panel, WorkspaceContext } from '../../../types/index.ts';
-import { BoundInput, BoundSelect, Btn, CardHead, Field, Hint, SplitActions } from '../../../ui/index.ts';
+import { BoundInput, BoundSelect, Btn, CardHead, Field, Notice, SplitActions } from '../../../ui/index.ts';
 import { useWorkspace } from '../../react/use-workspace.ts';
 import { type AxisKey, axisEdgePoint, axisFn, axisT } from '../field.ts';
 import { flushAxisTickFocus } from './axis-tick-focus.ts';
@@ -80,13 +80,12 @@ function TickRow({ w, axis, tick: k, panel }: { w: WorkspaceContext; axis: AxisK
       <td>
         <Btn
           variant="subtle"
-          className="icon"
+          icon="close"
+          className="icon-only"
           title="Remove tick"
           aria-label="Remove tick"
           onClick={() => w.commit((p) => (p.map[axis].ticks = p.map[axis].ticks.filter((x) => x.id !== k.id)))}
-        >
-          ×
-        </Btn>
+        />
       </td>
     </tr>
   );
@@ -126,7 +125,7 @@ function AxisBlock({ w, panel, axis, problem }: { w: WorkspaceContext; panel: Pa
           ))}
         </tbody>
       </table>
-      <Hint id={`axis-${axis}-problem`}>{problem}</Hint>
+      <Notice id={`axis-${axis}-problem`}>{problem}</Notice>
     </div>
   );
 }
@@ -142,16 +141,13 @@ export function AxesCard() {
   return (
     <>
       <CardHead
-        title={
-          <span title="Click labelled ticks on each axis and type their values. Without them, coordinates are pixels from the plot's top-left corner.">
-            Axes
-          </span>
-        }
+        title="Axes"
         tag="optional"
         badge={{
           id: 'axes-state',
           text: calibrated.length ? `${calibrated.join(', ')} calibrated` : 'pixels',
-          ok: calibrated.length === 2,
+          // An optional card: green when both axes are calibrated, plain otherwise (docs/ui.md, section 5).
+          ok: calibrated.length === 2 || undefined,
         }}
       />
       <SplitActions>
@@ -161,7 +157,7 @@ export function AxesCard() {
             id={`axis-${key}-add`}
             icon="plus"
             hotkey={`${key}tick`}
-            title="Shortcut: {key}"
+            title={`Click labelled ticks on the ${key} axis and type their values. Shortcut: {key}`}
             pressed={mode === `${key}tick`}
             disabled={!panel.grid.corners}
             onClick={() => mctx.toggleMode(`${key}tick`)}

@@ -101,7 +101,8 @@ const $ = (id: string) => document.getElementById(id) as HTMLInputElement & HTML
 test('draw toggles show their key cap and follow the mode', () => {
   const { app } = setup();
   assert.equal($('tool-rect').dataset.key, 'R');
-  assert.ok($('tool-rect').title.startsWith('Rectangle (R)'));
+  assert.equal($('tool-rect').title, 'Draw a rectangle; hold Shift for a square. Shortcut: R');
+  assert.equal($('tool-rect').dataset.icon, 'rect');
   fireEvent.click($('tool-rect'));
   assert.equal(app.mode?.type, 'rect');
   assert.equal($('tool-rect').getAttribute('aria-pressed'), 'true');
@@ -113,12 +114,15 @@ test('draw toggles show their key cap and follow the mode', () => {
 test('chips are keyed by region id: select, rename keeps the caret, nudge reset, delete', () => {
   const { panel, state, log } = setup();
   assert.equal($('roi-edit').hidden, true);
+  assert.equal($('roi-delete').hidden, true);
   const chips = document.querySelectorAll('#roi-list button');
   assert.equal(chips.length, 2);
   fireEvent.click(chips[1]);
   assert.equal(state.selectedId, panel.rois[1].id);
   assert.equal($('roi-edit').hidden, false);
   assert.equal($('roi-name').value, 'ROI 2');
+  assert.equal($('roi-delete').hidden, false);
+  assert.equal($('roi-delete').getAttribute('aria-label'), 'Delete the region (Delete or Backspace; ⌫ on a Mac)');
   const name = $('roi-name');
   fireEvent.focus(name);
   fireEvent.input(name, { target: { value: 'tumor' } });
@@ -143,6 +147,7 @@ test('scale: length and unit edit the bar, measuring defaults survive removing i
   const { panel } = setup();
   assert.equal($('scale-clear').disabled, true);
   assert.equal($('scale-state').textContent, 'pixels');
+  assert.equal($('scale-state').className, 'badge');
   panel.scale = { p1: { x: 0, y: 0 }, p2: { x: 30, y: 40 }, length: 5, unit: 'mm' };
   act(() => notify());
   assert.equal($('scale-length').value, '5');

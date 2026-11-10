@@ -1,14 +1,33 @@
 // The ROI Regions card: draw toggles (E / R / P), the copy-into-every-box option, one chip per region (keyed by
-// region id) and, for the selected region, its name, Reset nudges and Delete. Read in render, write in handlers
-// (docs/react.md, "The card pattern"). The selection lives in the tool state (roi-tool.ts); Delete / Backspace is its onKey.
+// region id) and, for the selected region, its name and Reset nudges, with Delete as the head trash. Read in render,
+// write in handlers (docs/react.md, "The card pattern"). The selection lives in the tool state (roi-tool.ts);
+// Delete / Backspace is its onKey.
 import type { Panel, Roi, RoiModeType } from '../../../types/index.ts';
-import { Actions, BoundInput, Btn, CardHead, Check, Chip, ChipList, Field, SplitActions } from '../../../ui/index.ts';
+import {
+  Actions,
+  BoundInput,
+  Btn,
+  CardHead,
+  Check,
+  Chip,
+  ChipList,
+  Field,
+  IconBtn,
+  SplitActions,
+} from '../../../ui/index.ts';
 import { useBoundText } from '../../react/use-bound.ts';
 import { useWorkspace } from '../../react/use-workspace.ts';
 import { notify } from '../../workspace/store.ts';
 import { useRoiContext } from './roi-context.ts';
 
 const SHAPE_NAMES: Record<string, string> = { ellipse: 'Ellipse', rect: 'Rectangle', polygon: 'Polygon' };
+
+/** The chip's tooltip: the shape and, for copies, how to move them (the how-to the sidebar does not show). */
+export function roiTitle(roi: Roi): string {
+  const shape = SHAPE_NAMES[roi.shape];
+  if (!roi.replicate) return shape;
+  return `${shape} copied into every box. Drag a copy to nudge it in its box; Alt-drag moves all copies. Handles resize the shape everywhere.`;
+}
 
 /** The chip's meta text: copies in the grid and how many are nudged. */
 export function roiMeta(panel: Panel, roi: Roi): string {
@@ -38,12 +57,12 @@ export function RegionsCard() {
     return (
       <Btn
         id={`tool-${shape}`}
+        icon={shape}
         hotkey={shape}
         title={title}
         pressed={mode === shape}
         onClick={() => rctx.toggleTool(shape)}
       >
-        <span className={`shape-icon ${shape}`} aria-hidden="true" />
         {label}
       </Btn>
     );
@@ -59,11 +78,25 @@ export function RegionsCard() {
           </>
         }
         badge={{ id: 'roi-state', text: n ? `${n} region${n === 1 ? '' : 's'}` : 'none', ok: n > 0 }}
+        actions={
+          <IconBtn
+            id="roi-delete"
+            variant="danger"
+            icon="trash"
+            label="Delete the region (Delete or Backspace; ⌫ on a Mac)"
+            hidden={!sel}
+            onClick={() => rctx.deleteSelected()}
+          />
+        }
       />
       <SplitActions role="toolbar" aria-label="Draw a region">
-        {draw('ellipse', 'Ellipse', 'Ellipse ({key}) — hold Shift for a circle')}
-        {draw('rect', 'Rectangle', 'Rectangle ({key}) — hold Shift for a square')}
-        {draw('polygon', 'Polygon', 'Polygon ({key}) — click points, then click the first point or press Enter')}
+        {draw('ellipse', 'Ellipse', 'Draw an ellipse; hold Shift for a circle. Shortcut: {key}')}
+        {draw('rect', 'Rectangle', 'Draw a rectangle; hold Shift for a square. Shortcut: {key}')}
+        {draw(
+          'polygon',
+          'Polygon',
+          'Draw a polygon: click its points, then click the first point or press Enter. Shortcut: {key}',
+        )}
       </SplitActions>
       <Check
         id="roi-replicate"
@@ -88,7 +121,7 @@ export function RegionsCard() {
               />
             }
             meta={roiMeta(panel, roi)}
-            title={`${SHAPE_NAMES[roi.shape]}${roi.replicate ? ' copied into every box' : ''}`}
+            title={roiTitle(roi)}
             onClick={() => {
               state.selectedId = roi.id === state.selectedId ? null : roi.id;
               w.changed();
@@ -99,10 +132,7 @@ export function RegionsCard() {
         ))}
       </ChipList>
       <div id="roi-edit" hidden={!sel}>
-        <Field
-          label="Region name"
-          title="Drag a copy to nudge it in its box; Alt-drag moves all copies. Handles resize the shape everywhere."
-        >
+        <Field label="Name">
           <BoundInput key={sel?.id} id="roi-name" spellCheck={false} value={sel?.name ?? ''} {...rename} />
         </Field>
         <Actions>
@@ -117,15 +147,6 @@ export function RegionsCard() {
             }}
           >
             Reset nudges
-          </Btn>
-          <Btn
-            id="roi-delete"
-            variant="danger"
-            icon="trash"
-            title="Delete (Delete or Backspace; ⌫ on a Mac)"
-            onClick={() => rctx.deleteSelected()}
-          >
-            Delete
           </Btn>
         </Actions>
       </div>

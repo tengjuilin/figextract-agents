@@ -1,7 +1,6 @@
 // The sampled colorbar strip under the Colorbar card's source fields: the colors the panel reads, with a mark at
 // each tick. Drawn in a layout effect keyed on what it shows, so a render that changes nothing (a keystroke in
 // another field) draws nothing. Hidden until there is a colorbar or a known colormap.
-
 import { colormapSamples, rgbToHex } from 'colormeris';
 import { useLayoutEffect, useRef } from 'react';
 import { colorAtT, pointAtT } from '../../../core/colorbar.ts';
@@ -80,6 +79,7 @@ export function BarStrip({ w, panel }: { w: WorkspaceContext; panel: Panel }) {
       className="bar-strip"
       width={600}
       height={28}
+      role="img"
       aria-label="Sampled colorbar"
       hidden={hidden}
     />

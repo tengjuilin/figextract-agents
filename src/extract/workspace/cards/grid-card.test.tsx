@@ -97,7 +97,7 @@ test('the main step shows the G cap and the shortcut tooltip, and its pressed st
   const { app } = setup();
   const btn = $('grid-place');
   assert.equal(btn.dataset.key, 'G');
-  assert.equal(btn.title, 'Shortcut: G');
+  assert.equal(btn.title, 'Click the outer corners of the heatmap. Shortcut: G');
   assert.equal(btn.getAttribute('aria-pressed'), 'false');
   fireEvent.click(btn);
   assert.equal(app.mode?.type, 'grid');
@@ -136,6 +136,7 @@ test('badge: not placed, then rows × columns; the remove button is disabled unt
   assert.equal($('grid-state').textContent, 'not placed');
   assert.ok($('grid-state').className.includes('todo'));
   assert.equal($('grid-clear').disabled, true);
+  assert.equal($('grid-clear').getAttribute('aria-label'), 'Remove the grid');
   assert.equal($('grid-detect').disabled, true);
   cleanup();
   setup({ placed: true });
@@ -226,6 +227,8 @@ test('Map: Plot area with its size in px, no rows or label fields shown', () => 
   assert.equal(document.querySelector('.card-head h2')!.textContent, 'Plot area');
   assert.equal($('grid-state').textContent, '100 × 50 px');
   assert.equal($('grid-place-label').textContent, 'Place plot area');
+  assert.equal($('grid-clear').getAttribute('aria-label'), 'Remove the plot area');
+  assert.match($('grid-place').title, /^Click the corners of the plot area\. Shortcut: /);
   assert.equal($('grid-rows').closest('.fields')!.hasAttribute('hidden'), true);
   assert.equal($('grid-detect').hidden, true);
   assert.equal($('grid-row-labels').closest('details')!.hidden, true);
@@ -242,6 +245,8 @@ test('ROI: optional tag and Box names with their count', () => {
   fireEvent.input(ta, { target: { value: 'B1, B2, B3' } });
   assert.deepEqual(panel.grid.boxLabels, ['B1', 'B2', 'B3']);
   assert.equal($('grid-box-labels').closest('details')!.querySelector('.summary-note')!.textContent, '3 names');
+  fireEvent.input(ta, { target: { value: 'B1' } });
+  assert.equal($('grid-box-labels').closest('details')!.querySelector('.summary-note')!.textContent, '1 name');
 });
 
 test('the Model field shows the labels model, saves a trimmed value on commit', () => {
@@ -271,8 +276,8 @@ test('Read labels with AI: no key opens Settings; busy state while waiting; labe
   assert.equal(btn.textContent, 'Read labels with AI');
   fireEvent.click(btn);
   assert.deepEqual(opened, ['agent']);
-  assert.match($('grid-read-labels-hint').textContent!, /Set an OpenRouter key/);
-  assert.ok($('grid-read-labels-hint').classList.contains('error'));
+  assert.match($('grid-read-labels-problem').textContent!, /Set an OpenRouter key/);
+  assert.equal($('grid-read-labels-hint').textContent, '');
 
   settings.agent.key = 'k';
   let finish!: (v: unknown) => void;
@@ -287,6 +292,7 @@ test('Read labels with AI: no key opens Settings; busy state while waiting; labe
   assert.equal(btn.textContent, 'Reading…');
   assert.equal(btn.disabled, true);
   assert.match($('grid-read-labels-hint').textContent!, /^Asking /);
+  assert.equal($('grid-read-labels-problem').textContent, '');
   await act(async () => {
     finish({
       choices: [
@@ -310,5 +316,6 @@ test('Read labels with AI: no key opens Settings; busy state while waiting; labe
   assert.deepEqual(panel.grid.rowLabels, ['a', 'b', 'c']);
   assert.equal(($('grid-row-labels') as unknown as HTMLTextAreaElement).value, 'a\nb\nc');
   assert.equal(log.filter((l) => l === 'history').length, 1);
-  assert.match($('grid-read-labels-hint').textContent!, /^Read 3 row and 4 column labels/);
+  // Labels with warnings (the panel has its own counts here) are reported as a problem, in the Notice.
+  assert.match($('grid-read-labels-problem').textContent!, /^Read 3 row and 4 column labels/);
 });

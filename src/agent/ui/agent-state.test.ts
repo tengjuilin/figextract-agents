@@ -1,7 +1,17 @@
 import assert from 'node:assert/strict';
 import { test } from 'vitest';
 import type { RunEventData, RunUsage } from '../../types/index.ts';
-import { elapsed, errorText, initialRunState, money, runReducer, statusLine } from './agent-state.ts';
+import {
+  answerLabel,
+  answerText,
+  elapsed,
+  errorText,
+  initialRunState,
+  money,
+  runBadge,
+  runReducer,
+  statusLine,
+} from './agent-state.ts';
 
 const usage = (over: Partial<RunUsage> = {}): RunUsage => ({
   llmCost: 0.02,
@@ -72,4 +82,21 @@ test('formatting helpers', () => {
   assert.equal(errorText({ statusCode: 401 }), 'The API key was rejected (401).');
   assert.equal(errorText({ status: 404, message: 'x' }), 'Model not found (404): x');
   assert.equal(errorText(new Error('boom')), 'boom');
+});
+
+test('the badge is plain while off or running and green once a run is done', () => {
+  assert.deepEqual(runBadge(initialRunState), { text: 'off' });
+  const running = runReducer(initialRunState, { type: 'start', now: 0 });
+  assert.deepEqual(runBadge(running), { text: 'running' });
+  assert.deepEqual(runBadge(runReducer(running, { type: 'end', now: 1, prefix: 'Done · ' })), {
+    text: 'done',
+    ok: true,
+  });
+  assert.deepEqual(runBadge(runReducer(running, { type: 'end', now: 1, prefix: 'Stopped · ' })), { text: 'off' });
+});
+
+test('answers read as words: button labels capitalised, suggestions in running text', () => {
+  assert.equal(answerLabel('not_flagged'), 'Not flagged');
+  assert.equal(answerText('real_cell'), 'real cell');
+  assert.equal(answerText({ rows: 9, cols: 12 }), 'rows 9, cols 12');
 });

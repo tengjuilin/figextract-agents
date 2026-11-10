@@ -196,8 +196,10 @@ test('axes: the add buttons need a plot area and follow the mode; a tick row edi
   assert.equal(t.log.filter((l) => l === 'history').length, 1);
   assert.ok(!row.classList.contains('invalid'));
   assert.equal(document.getElementById('axes-state')?.textContent, 'pixels');
+  assert.equal(document.getElementById('axes-state')?.className, 'badge');
   // The position field shows 50% across the plot area; the remove button takes the tick out.
   assert.equal((row.querySelector('.pos input') as HTMLInputElement).value, '50');
+  assert.equal(row.querySelector('button')!.dataset.icon, 'close');
   fireEvent.click(row.querySelector('button')!);
   assert.equal(t.panel.map.x.ticks.length, 0);
   void log;
@@ -219,7 +221,7 @@ test('profiles: chips are keyed by id, shift-click adds to the selection, the ed
   fireEvent.click(chips[1], { shiftKey: true });
   assert.deepEqual(t.selection, [`${t.panel.map.profiles[0].id}`, `${t.panel.map.profiles[1].id}+`]);
   assert.equal(t.plotted.at(-1), 2);
-  assert.equal($('profile-csv').textContent, 'Download 2 profiles CSV');
+  assert.equal($('profile-csv').textContent, 'Download CSV (2 profiles)');
   assert.ok(!$('profile-all').hidden === false);
   assert.equal(document.getElementById('profile-state')?.textContent, '2 profiles');
   // Typing a name edits the selected profile once in history.
@@ -253,7 +255,12 @@ test('profiles: the sweep button toggles through the state, and the line-at text
 
 test('results: bin size and units commit to the panel, the toggles only redraw, downloads are enabled', () => {
   const t = setup(MapResultsCard, { placed: true });
-  assert.match(document.getElementById('map-summary')!.textContent!, /^3 × 2 values \(native pixels\)/);
+  // Nothing flagged or clipped: those segments are left out, and there is no final period.
+  assert.equal(
+    document.getElementById('map-summary')!.textContent,
+    '3 × 2 values · range 0 – 1 · colorbar resolves about 5 levels',
+  );
+  assert.equal(document.querySelector('details.options .summary-note')!.textContent, 'bin 1 px');
   fireEvent.focus($('map-bin'));
   fireEvent.input($('map-bin'), { target: { value: '4' } });
   assert.equal(t.panel.map.bin, 4);
@@ -266,7 +273,8 @@ test('results: bin size and units commit to the panel, the toggles only redraw, 
   assert.ok(t.draws.length > 0);
   assert.ok($('map-recon').checked);
   // The CSVs themselves are checked in the browser; the buttons are enabled for a valid field.
-  assert.ok(!$('map-dl-long').disabled && !$('map-dl-csv').disabled);
+  assert.ok(!$('map-dl-long').disabled && !$('map-dl-csv').disabled && !$('map-copy-tsv').disabled);
+  assert.equal($('map-recon').closest('label')!.textContent!.trim(), 'Show reconstruction');
 });
 
 test("a Map card rendered with another tool's panel active (a render queued before a tool switch) shows nothing and reads no result", () => {

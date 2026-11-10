@@ -19,6 +19,7 @@ import {
   IconBtn,
   MainStep,
   Notice,
+  Options,
 } from '../../../ui/index.ts';
 import { profileCsv, profilesCsv, safeFileName } from '../../project/project-files.ts';
 import { useBoundNumber, useBoundText } from '../../react/use-bound.ts';
@@ -145,15 +146,15 @@ export function ProfilesCard() {
   const deleteLabel =
     shown.length > 1
       ? `Delete the ${shown.length} selected profiles (Delete or Backspace; ⌫ on a Mac)`
-      : 'Delete (Delete or Backspace; ⌫ on a Mac)';
+      : 'Delete the profile (Delete or Backspace; ⌫ on a Mac)';
   const csvLabel =
-    view && view.series.length > 1 ? `Download ${view.series.length} profiles CSV` : 'Download profile CSV';
+    view && view.series.length > 1 ? `Download CSV (${view.series.length} profiles)` : 'Download profile CSV';
 
   return (
     <>
       <CardHead
         title="Profiles"
-        badge={{ id: 'profile-state', text: n ? `${n} profile${n === 1 ? '' : 's'}` : 'none', ok: n > 0 }}
+        badge={{ id: 'profile-state', text: n ? `${n} profile${n === 1 ? '' : 's'}` : 'none', ok: n > 0 || undefined }}
         actions={
           <IconBtn
             id="profile-delete"
@@ -251,8 +252,8 @@ export function ProfilesCard() {
         <Notice id="profile-problem">{view?.problem ?? ''}</Notice>
         <Fields>
           <Field
-            label="X axis"
-            title="What the plot's horizontal axis shows: axis values (with axis ticks), or the distance from the profile's start in pixels or in scale-bar units. Shared with the Results card's Coordinates."
+            label="Coordinates"
+            title="How positions are given, shared with the Results card: axis values (needs axis ticks), pixels or scale-bar units. The plot's horizontal axis follows it."
           >
             {/* Shows what is plotted, which may be a fallback from the setting. */}
             <UnitsSelect
@@ -268,7 +269,7 @@ export function ProfilesCard() {
             />
           </Field>
           <Field
-            label="Scale"
+            label="Normalize"
             title="Divide each profile by its own maximum or mean to compare shapes rather than signal levels"
           >
             <BoundSelect
@@ -276,46 +277,19 @@ export function ProfilesCard() {
               value={state.profileNorm}
               options={[
                 { value: 'raw', label: 'Values' },
-                { value: 'max', label: '÷ each max' },
-                { value: 'mean', label: '÷ each mean' },
+                { value: 'max', label: 'Divide by max' },
+                { value: 'mean', label: 'Divide by mean' },
               ]}
               onChange={changeNorm}
             />
           </Field>
-          <Field label="Speed (px/s)" title="How fast the profile moves when swept, in page pixels per second">
-            <BoundInput
-              id="profile-sweep-speed"
-              kind="number"
-              min={1}
-              max={500}
-              step="any"
-              className="num"
-              value={state.sweepSpeed}
-              onInput={(text) => {
-                const v = Number(text);
-                if (text.trim() !== '' && Number.isFinite(v)) state.sweepSpeed = v;
-              }}
-            />
-          </Field>
         </Fields>
-        <Check
-          id="profile-sweep-runoff"
-          label="Run off the edge"
-          title="Keep going until no part of the line is inside the plot area, then turn. Off: turn as soon as the line touches an edge."
-          checked={state.sweepRunOff}
-          onChange={(on) => {
-            state.sweepRunOff = on;
-            // Switching edges mid-sweep: the new range around where it started.
-            mctx.sweep.retarget();
-            notify({ light: true });
-          }}
-        />
         <MainStep
           id="profile-sweep"
           variant="primary"
           icon={sweeping ? 'pause' : 'play'}
           hotkey="sweepProfile"
-          title="Move the profile across the plot area, perpendicular to itself, and back (Shortcut: {key})"
+          title="Move the profile across the plot area, perpendicular to itself, and back. Shortcut: {key}"
           pressed={sweeping}
           disabled={!sweeping && !panel.grid.corners}
           onClick={() => mctx.sweep.toggleSweep()}
@@ -325,18 +299,55 @@ export function ProfilesCard() {
         <p
           id="profile-sweep-at"
           className="profile-at"
-          title="Where the profile's midpoint is, across the direction it sweeps (units as in Coordinates)"
+          title="Where the profile's midpoint is across the direction it sweeps, in units as in Coordinates"
           ref={at}
         />
         <PlotCanvas mctx={mctx} />
         <MainStep
           id="profile-csv"
+          variant="primary"
           icon="download"
+          title={
+            view && view.series.length > 1
+              ? 'One row per sample with a profile column, for every selected profile'
+              : 'One row per sample along the profile'
+          }
           disabled={!view?.series.length}
           onClick={() => downloadProfileCsv(mctx)}
         >
           {csvLabel}
         </MainStep>
+        <Options summary="Sweep options">
+          <Fields>
+            <Field label="Speed (px/s)" title="How fast the profile moves when swept, in page pixels per second">
+              <BoundInput
+                id="profile-sweep-speed"
+                kind="number"
+                min={1}
+                max={500}
+                step="any"
+                className="num"
+                value={state.sweepSpeed}
+                onInput={(text) => {
+                  const v = Number(text);
+                  if (text.trim() !== '' && Number.isFinite(v)) state.sweepSpeed = v;
+                }}
+              />
+            </Field>
+          </Fields>
+          <Check
+            id="profile-sweep-runoff"
+            label="Run off the edge"
+            title="Keep going until no part of the line is inside the plot area, then turn. Off: turn as soon as the line touches an edge."
+            checked={state.sweepRunOff}
+            onChange={(on) => {
+              state.sweepRunOff = on;
+              // Switching edges mid-sweep: the new range around where it started.
+              mctx.sweep.retarget();
+              notify({ light: true });
+            }}
+          />
+        </Options>
       </div>
     </>
   );

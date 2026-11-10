@@ -131,6 +131,7 @@ test('mode toggle is pressed, saves, and shows the decision model; hidden while 
 test('Run is disabled without a key or proxy and without a file; the settings button opens the Agent tab', () => {
   const a = setup({ key: '' });
   assert.equal(el('agent-run').disabled, true);
+  assert.equal(el('agent-status').textContent, 'No API key: set it in Settings → Agent.');
   fireEvent.click(el('agent-open-settings'));
   assert.deepEqual(a.opened, ['agent']);
   cleanup();
@@ -165,7 +166,7 @@ test('run: passes cacheless request settings through, shows log, cost and Stop; 
   assert.deepEqual(runs[0].s.pages, [2]);
   assert.equal(runs[0].s.mode, 'agent');
   assert.equal(el('agent-badge').textContent, 'running');
-  assert.equal(el('agent-badge').className, 'badge todo');
+  assert.equal(el('agent-badge').className, 'badge');
   assert.equal(el('agent-run').hidden, true);
   assert.equal(el('agent-stop').hidden, false);
   assert.equal(el('agent-mode-decision').disabled, true);
@@ -177,7 +178,8 @@ test('run: passes cacheless request settings through, shows log, cost and Stop; 
   assert.match(el('agent-log').textContent!, /Agentget_state\(\)/);
   assert.match(el('agent-status').textContent!, /^Step 1 · \$0\.01 · 50% cached · /);
   await act(async () => runs[0].finish());
-  assert.equal(el('agent-badge').textContent, 'off');
+  assert.equal(el('agent-badge').textContent, 'done');
+  assert.equal(el('agent-badge').className, 'badge ok');
   assert.equal(el('agent-run').hidden, false);
   assert.match(el('agent-status').textContent!, /^Done · Step 3 · \$0\.03/);
 });
@@ -246,7 +248,7 @@ test('Needs review: a rejected panel offers Redo (a focused run), Accept anyway 
   notify();
   assert.equal(el('agent-review').hidden, false);
   const item = el('agent-review-list').querySelector('li.rejected')!;
-  assert.match(item.textContent!, /was rejected by agent \(40% sure\)/);
+  assert.match(item.textContent!, /Rejected by agent \(40% sure\)\./);
   const note = item.querySelector('input[type=text]') as HTMLInputElement;
   fireEvent.change(note, { target: { value: ' ticks wrong ' } });
   const button = (text: string) => [...item.querySelectorAll('button')].find((b) => b.textContent === text)!;
@@ -259,7 +261,7 @@ test('Needs review: a rejected panel offers Redo (a focused run), Accept anyway 
   assert.deepEqual(runs[0].s.focus, { panelId: panel.id, note: 'ticks wrong' });
   assert.deepEqual(runs[0].s.pages, [panel.page]);
   assert.equal((button('Redo with agent') as HTMLButtonElement).disabled, true);
-  assert.equal((button('Delete panel') as HTMLButtonElement).disabled, true);
+  assert.equal((button('Delete the panel') as HTMLButtonElement).disabled, true);
 });
 
 test('Needs review: an escalated question shows the suggestion and answers with source human', async () => {
@@ -279,8 +281,10 @@ test('Needs review: an escalated question shows the suggestion and answers with 
   notify();
   await waitFor(() => assert.equal(el('agent-review').hidden, false), { timeout: 2000 });
   const item = el('agent-review-list').querySelector('li')!;
-  assert.match(item.textContent!, /agent suggested real_cell \(50% sure\)/);
-  const [, real, notCell] = [...item.querySelectorAll('button')];
+  assert.match(item.textContent!, /agent suggested real cell \(50% sure\)/);
+  const [chip, real, notCell] = [...item.querySelectorAll('button')];
+  assert.equal(chip.className, 'chip review-panel');
+  assert.equal(real.textContent, 'Real cell');
   assert.equal(real.getAttribute('aria-pressed'), 'true');
   assert.equal(notCell.hasAttribute('aria-pressed'), false);
   setQuestions([]);

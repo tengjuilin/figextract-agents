@@ -1,15 +1,15 @@
 // The Grid card's label editors: row and column labels with Read labels with AI (heatmap), and the box names
 // (ROI). A pasted list that does not match the grid size offers to resize the grid, as it always has.
-
 import { DEFAULT_LABELS_MODEL } from '../../../agent/labels.ts';
 import { labelsModelFocused, labelsReaderState, readLabels, setLabelsModel } from '../../../agent/ui/labels-reader.ts';
-import { BoundInput, Field, Hint, MainStep, Options, useSettings } from '../../../ui/index.ts';
+import { BoundInput, Field, Hint, MainStep, Notice, Options, useSettings } from '../../../ui/index.ts';
 import { parseLabelText } from '../../project/project.ts';
 import { useBoundText } from '../../react/use-bound.ts';
 import { useWorkspace } from '../../react/use-workspace.ts';
 
 const READ_TITLE =
-  'Send the current view to a vision LLM (Agent card, Label reader) and fill in both lists for this panel. Zoom so the grid and its labels are visible.';
+  'Send the current view to the label model and fill in both lists for this panel. Zoom so the grid and its labels are visible.';
+const LIST_TITLE = 'One per line or comma-separated';
 
 export function LabelOptions({ hidden }: { hidden: boolean }) {
   const { w } = useWorkspace({ section: 'sec-grid' });
@@ -57,8 +57,8 @@ export function LabelOptions({ hidden }: { hidden: boolean }) {
         {busy ? 'Reading…' : 'Read labels with AI'}
       </MainStep>
       <Field
-        label="Model"
-        title="OpenRouter model id; needs vision and tools. Key and base URL are the Agent's (Settings → Agent)."
+        label="Label model"
+        title="OpenRouter model id for Read labels with AI; needs vision and tools. Key and base URL are the Agent's (Settings → Agent)."
       >
         <BoundInput
           id="agent-labels"
@@ -69,8 +69,13 @@ export function LabelOptions({ hidden }: { hidden: boolean }) {
           onCommit={setLabelsModel}
         />
       </Field>
-      <Hint id="grid-read-labels-hint" className={error ? 'error' : undefined}>
-        {hint}
+      {/* A failed read is a problem (Notice), progress and success are status (Hint). Both stay mounted, so
+          screen readers keep listening to the same live regions. */}
+      <Notice id="grid-read-labels-problem" aria-live="polite">
+        {error ? hint : ''}
+      </Notice>
+      <Hint id="grid-read-labels-hint" aria-live="polite">
+        {error ? '' : hint}
       </Hint>
       <Field stack label="Rows (top → bottom)">
         <BoundInput
@@ -79,7 +84,8 @@ export function LabelOptions({ hidden }: { hidden: boolean }) {
           kind="textarea"
           rows={3}
           spellCheck={false}
-          placeholder="One per line or comma-separated; blank = R1, R2, …"
+          title={`${LIST_TITLE}; empty for R1, R2, …`}
+          placeholder="R1, R2, …"
           value={g.rowLabels.join('\n')}
           {...rowLabels}
           onCommit={() => {
@@ -95,7 +101,8 @@ export function LabelOptions({ hidden }: { hidden: boolean }) {
           kind="textarea"
           rows={3}
           spellCheck={false}
-          placeholder="One per line or comma-separated; blank = C1, C2, …"
+          title={`${LIST_TITLE}; empty for C1, C2, …`}
+          placeholder="C1, C2, …"
           value={g.colLabels.join('\n')}
           {...colLabels}
           onCommit={() => {
@@ -116,15 +123,20 @@ export function BoxNameOptions({ hidden }: { hidden: boolean }) {
     p.grid.boxLabels = parseLabelText(v);
   });
   return (
-    <Options hidden={hidden} summary="Box names" note={names.length ? `${names.length} names` : 'R1 C1, …'}>
-      <Field stack label="Box names, left → right, top → bottom">
+    <Options
+      hidden={hidden}
+      summary="Box names"
+      note={names.length ? `${names.length} name${names.length === 1 ? '' : 's'}` : 'R1 C1, …'}
+    >
+      <Field stack label="Box names (left → right, top → bottom)">
         <BoundInput
           key={active.id}
           id="grid-box-labels"
           kind="textarea"
           rows={3}
           spellCheck={false}
-          placeholder="One per line or comma-separated, e.g. B-a11, B-a16, C-a9 …; blank = R1 C1, R1 C2, …"
+          title={`${LIST_TITLE}; empty for R1 C1, R1 C2, …`}
+          placeholder="B-a11, B-a16, C-a9, …"
           value={names.join('\n')}
           {...bind}
         />

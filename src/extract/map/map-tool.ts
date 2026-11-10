@@ -219,11 +219,15 @@ export function setupMapTool(ws: Workspace) {
     hasCalibration: (p) =>
       p.map.x.ticks.length > 0 || p.map.y.ticks.length > 0 || p.map.profiles.length > 0 || !!p.scale,
     sections: ['sec-scale', 'sec-axes', 'sec-profiles', 'sec-map-results'],
-    gridTexts: ['Click the top-left corner of the plot area (inside the axes).', 'Click the bottom-right corner.'],
+    gridTexts: [
+      'Click the top-left corner of the plot area (inside the axes).',
+      'Click the bottom-right corner of the plot area.',
+    ],
     modeTexts: {
-      xtick: ['Click a labelled tick on the x axis, then type its value. Press Done when finished.'],
-      ytick: ['Click a labelled tick on the y axis, then type its value. Press Done when finished.'],
-      profile: ['Click the start of the profile line.', 'Click its end. Hold Alt to disable axis snapping.'],
+      // The mode bar's button reads Cancel until the first tick, then Done, so the texts name neither.
+      xtick: ['Click a labelled tick on the x axis, then type its value. Repeat for each tick.'],
+      ytick: ['Click a labelled tick on the y axis, then type its value. Repeat for each tick.'],
+      profile: ['Click the start of the profile.', 'Click the end of the profile. Hold Alt to disable axis snapping.'],
       scale: SCALE_MODE_TEXTS,
     },
     onModeChange,

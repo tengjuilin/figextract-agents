@@ -1,11 +1,11 @@
-// The heatmap Results card: summary, the value table, CSV downloads and Copy table, and the Reconstruct
-// toggle. The table stays imperative (results-table.ts) inside a ref host: it can hold a million cells and the
+// The heatmap Results card: summary, the value table, CSV downloads and Copy table, and the Show
+// reconstruction toggle. The table stays imperative (results-table.ts) inside a ref host: it can hold a million cells and the
 // hover highlight adds a class (`td.hl`) that React would wipe on a re-render. It is rebuilt only when the
 // cached result changes. Read in render, write in handlers (docs/react.md, "The card pattern").
 import { useLayoutEffect, useMemo, useRef } from 'react';
-import type { HeatmapResult, Panel, Workspace, WorkspaceContext } from '../../../types/index.ts';
-import { Btn, Check, Hint, MainStep, Notice, SplitActions } from '../../../ui/index.ts';
-import { toLongCsv, toWideCsv } from '../../project/project-files.ts';
+import type { HeatmapResult, Panel, WorkspaceContext } from '../../../types/index.ts';
+import { Btn, CardHead, Check, Hint, MainStep, Notice, SplitActions } from '../../../ui/index.ts';
+import { toLongCsv, toWideCsv, toWideTsv } from '../../project/project-files.ts';
 import { useTableHover } from '../../react/use-table-hover.ts';
 import { useWorkspace } from '../../react/use-workspace.ts';
 import { copyTable, downloadCsv } from '../../results-actions.ts';
@@ -14,19 +14,10 @@ import { fillResultTable, heatmapSummary, highlightTableCell } from '../results-
 
 type Result = HeatmapResult | { error: string };
 
-/** The table as tab-separated text for a spreadsheet. */
-export function toTsv(panel: Panel, res: HeatmapResult): string {
-  return toWideCsv(panel, res)
-    .trim()
-    .split('\n')
-    .map((line) => line.replace(/"([^"]|"")*"|,/g, (m) => (m === ',' ? '\t' : m.slice(1, -1).replace(/""/g, '"'))))
-    .join('\n');
-}
-
 function copy(w: WorkspaceContext) {
   const panel = w.activePanel();
   const res = w.resultFor(panel) as HeatmapResult;
-  if (!res.error) void copyTable(w, toTsv(panel, res));
+  if (!res.error) void copyTable(w, toWideTsv(panel, res));
 }
 
 function download(w: WorkspaceContext, long: boolean) {
@@ -59,7 +50,12 @@ function ResultTable({ w, panel, res }: { w: WorkspaceContext; panel: Panel; res
 
   return (
     <div className="table-wrap">
-      <table id="result-table" className="result-table" ref={table} />
+      <table
+        id="result-table"
+        className="result-table"
+        title="Cells outlined in red are flagged: color far from the colorbar (ΔE) or not on it"
+        ref={table}
+      />
     </div>
   );
 }
@@ -76,21 +72,23 @@ export function HeatmapResultsCard() {
   const summary = useMemo(() => ('cells' in res ? heatmapSummary(res, maxDeltaE) : ''), [res, maxDeltaE]);
   return (
     <>
-      {/* The toggle sits straight in the head: extract.css pushes a head's first .check to the right. */}
-      <div className="card-head">
-        <h2>Results</h2>
-        <Check
-          id="toggle-recon"
-          label="Reconstruct"
-          checked={w.app.showRecon}
-          onChange={(on) => {
-            // Only the drawing changes: redraw, and re-render the toggle (no project change, no listeners).
-            w.app.showRecon = on;
-            w.viewer.requestDraw();
-            notify({ light: true });
-          }}
-        />
-      </div>
+      <CardHead
+        title="Results"
+        toggles={
+          <Check
+            id="toggle-recon"
+            label="Show reconstruction"
+            title="Paint the extracted values back over the figure"
+            checked={w.app.showRecon}
+            onChange={(on) => {
+              // Only the drawing changes: redraw, and re-render the toggle (no project change, no listeners).
+              w.app.showRecon = on;
+              w.viewer.requestDraw();
+              notify({ light: true });
+            }}
+          />
+        }
+      />
       <Notice id="result-problem">{error}</Notice>
       <Hint id="result-summary">{summary}</Hint>
       <ResultTable w={w} panel={panel} res={res} />
@@ -98,7 +96,7 @@ export function HeatmapResultsCard() {
         id="dl-csv"
         variant="primary"
         icon="download"
-        title="The table as shown: one row per grid row"
+        title="One row per grid row, as in the table"
         disabled={!!error}
         onClick={() => download(w, false)}
       >
@@ -108,7 +106,7 @@ export function HeatmapResultsCard() {
         <Btn
           id="dl-long"
           icon="download"
-          title="One line per cell with its color, ΔE and flag"
+          title="One line per cell with its color, ΔE, flag and status"
           disabled={!!error}
           onClick={() => download(w, true)}
         >

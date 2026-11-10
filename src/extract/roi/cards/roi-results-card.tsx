@@ -1,14 +1,26 @@
-// The ROI Results card: summary, metric select, the region × measurement table, CSV download and Copy table.
-// The table stays imperative inside a ref host (cells carry data-r / data-c for the hover link to the image and
-// the table can be large); it is rebuilt only when the cached result, the metric or the unit changes.
-// Read in render, write in handlers (docs/react.md, "The card pattern").
+// The ROI Results card: summary, the Measurement select, the box × region table, CSV downloads and Copy
+// table, and the Show signal toggle. The table stays imperative inside a ref host (cells carry data-r / data-c
+// for the hover link to the image and the table can be large); it is rebuilt only when the cached result, the
+// metric or the unit changes. Read in render, write in handlers (docs/react.md, "The card pattern").
 import { useLayoutEffect, useRef } from 'react';
-import type { Panel, RoiResult, RoiStats, Workspace, WorkspaceContext } from '../../../types/index.ts';
-import { BoundSelect, Btn, Check, Field, Hint, Notice, SplitActions } from '../../../ui/index.ts';
-import { formatNumber, roiCsv } from '../../project/project-files.ts';
+import type { Panel, RoiResult, RoiStats, WorkspaceContext } from '../../../types/index.ts';
+import {
+  BoundSelect,
+  Btn,
+  CardHead,
+  Check,
+  Field,
+  Fields,
+  Hint,
+  MainStep,
+  Notice,
+  SplitActions,
+} from '../../../ui/index.ts';
+import { formatNumber, ROI_METRIC_NAMES, roiCsv, roiWideCsv, roiWideTsv } from '../../project/project-files.ts';
 import { useTableHover } from '../../react/use-table-hover.ts';
 import { useWorkspace } from '../../react/use-workspace.ts';
 import { copyTable, downloadCsv } from '../../results-actions.ts';
+import { joinSummary, pct } from '../../results-summary.ts';
 import { notify } from '../../workspace/store.ts';
 import { metricFor, metricValue, roiTableModel, shortNumber } from '../quantify.ts';
 import { useRoiContext } from './roi-context.ts';
@@ -17,18 +29,6 @@ type Result = RoiResult | { error: string };
 
 // Not `'rows' in res`: a map field has numeric rows.
 const hasRows = (res: Result): res is RoiResult => Array.isArray((res as RoiResult).rows);
-
-export const METRIC_NAMES: Record<string, string> = {
-  sum: 'Total signal',
-  mean: 'Mean over region',
-  max: 'Max',
-  meanSignal: 'Mean over signal pixels',
-  signalPx: 'Signal area (px)',
-  areaPx: 'Region area (px)',
-  sumArea: 'Total signal × area',
-  signalArea: 'Signal area',
-  area: 'Region area',
-};
 
 /** The select's options; the scaled ones need a scale bar and name its unit. */
 export function metricOptions(unit: string | null) {
@@ -46,35 +46,30 @@ export function metricOptions(unit: string | null) {
   ];
 }
 
-/** The table as tab-separated text for a spreadsheet. */
-export function roiTsv(panel: Panel, res: RoiResult, metric: keyof RoiStats): string {
-  const model = roiTableModel(panel, res);
-  const lines = [[METRIC_NAMES[metric], ...model.rois.map((r) => r.name)].join('\t')];
-  for (const row of model.rows) {
-    lines.push(
-      [
-        row.label,
-        ...model.rois.map((roi) => {
-          const r = row.cells.get(roi.id);
-          const v = r ? metricValue(r.stats, metric) : null;
-          return v === null ? '' : formatNumber(v);
-        }),
-      ].join('\t'),
-    );
+/** The one-line summary: size, the range of the measurement shown, units and the flagged share of signal. */
+export function roiSummary(panel: Panel, res: RoiResult, metric: keyof RoiStats): string {
+  const n = panel.rois.length;
+  const regions = `${n} region${n === 1 ? '' : 's'}`;
+  const boxes = roiTableModel(panel, res).rows.filter((r) => r.row !== null).length;
+  let lo = Number.POSITIVE_INFINITY;
+  let hi = Number.NEGATIVE_INFINITY;
+  let flagged = 0;
+  let signal = 0;
+  for (const r of res.rows) {
+    const v = metricValue(r.stats, metric);
+    if (v !== null && Number.isFinite(v)) {
+      lo = Math.min(lo, v);
+      hi = Math.max(hi, v);
+    }
+    flagged += r.stats.flaggedPx;
+    signal += r.stats.signalPx;
   }
-  return lines.join('\n');
-}
-
-export function roiSummary(panel: Panel, res: RoiResult): string {
-  const flagged = res.rows.reduce((s, r) => s + r.stats.flaggedPx, 0);
-  const signal = res.rows.reduce((s, r) => s + r.stats.signalPx, 0);
-  const unit = res.unit ? ` · areas in ${res.unit}²` : ' · pixel units';
-  return (
-    `${panel.rois.length} region${panel.rois.length === 1 ? '' : 's'} · ${res.rows.length} measurement${res.rows.length === 1 ? '' : 's'}${unit}` +
-    (flagged
-      ? ` · ${((100 * flagged) / Math.max(1, signal)).toFixed(1)}% of signal pixels matched no colorbar color (ΔE > ${panel.settings.maxDeltaE}); cells over 10% are outlined`
-      : '')
-  );
+  return joinSummary([
+    boxes ? `${regions} × ${boxes} box${boxes === 1 ? '' : 'es'}` : regions,
+    lo <= hi && `range ${formatNumber(lo)} – ${formatNumber(hi)}`,
+    res.unit ? `areas in ${res.unit}²` : 'pixel units',
+    flagged > 0 && `${pct(flagged, signal)} of signal pixels flagged (ΔE > ${panel.settings.maxDeltaE})`,
+  ]);
 }
 
 function th(text: string, rowhead = false) {
@@ -90,7 +85,7 @@ export function fillRoiTable(table: HTMLTableElement, panel: Panel, res: Result,
   const model = roiTableModel(panel, res);
   const thead = document.createElement('thead');
   const hr = document.createElement('tr');
-  hr.append(th(METRIC_NAMES[metric], true), ...model.rois.map((r) => th(r.name)));
+  hr.append(th(ROI_METRIC_NAMES[metric], true), ...model.rois.map((r) => th(r.name)));
   thead.append(hr);
   const tbody = document.createElement('tbody');
   for (const row of model.rows) {
@@ -120,7 +115,15 @@ export function fillRoiTable(table: HTMLTableElement, panel: Panel, res: Result,
 function copy(w: WorkspaceContext, metric: keyof RoiStats) {
   const panel = w.activePanel();
   const res = w.resultFor(panel) as Result;
-  if (hasRows(res)) void copyTable(w, roiTsv(panel, res, metricFor(metric, !!panel.scale)));
+  if (hasRows(res)) void copyTable(w, roiWideTsv(panel, res, metricFor(metric, !!panel.scale)));
+}
+
+function download(w: WorkspaceContext, metric: keyof RoiStats, long: boolean) {
+  const p = w.activePanel();
+  const r = w.resultFor(p) as Result;
+  if (!hasRows(r)) return;
+  if (long) downloadCsv(w, p, roiCsv([{ panel: p, result: r }]), '_rois');
+  else downloadCsv(w, p, roiWideCsv(p, r, metricFor(metric, !!p.scale)), '_rois_table');
 }
 
 function ResultTable({
@@ -147,7 +150,12 @@ function ResultTable({
 
   return (
     <div className="table-wrap">
-      <table id="roi-result-table" className="result-table" ref={table} />
+      <table
+        id="roi-result-table"
+        className="result-table"
+        title="A cell is outlined when over 10% of its signal pixels matched no colorbar color"
+        ref={table}
+      />
     </div>
   );
 }
@@ -160,62 +168,72 @@ export function RoiResultsCard() {
   const res: Result = panel.tool === 'roi' ? (w.resultFor(panel) as Result) : { error: '' };
   const error = 'error' in res && res.error ? res.error : '';
   const metric = metricFor(state.metric, !!panel.scale);
-  const summary = error || !hasRows(res) ? '' : roiSummary(panel, res);
+  const summary = error || !hasRows(res) ? '' : roiSummary(panel, res, metric);
   const options = metricOptions(panel.scale?.unit ?? null);
 
   return (
     <>
-      <div className="card-head">
-        <h2>Results</h2>
-        <Check
-          id="toggle-mask"
-          label="Show signal"
-          title="Tint the pixels counted as signal"
-          checked={state.showMask}
-          onChange={(on) => {
-            state.showMask = on;
-            w.viewer.requestDraw();
-            notify({ light: true });
-          }}
-        />
-      </div>
+      <CardHead
+        title="Results"
+        toggles={
+          <Check
+            id="toggle-mask"
+            label="Show signal"
+            title="Tint the pixels counted as signal"
+            checked={state.showMask}
+            onChange={(on) => {
+              state.showMask = on;
+              w.viewer.requestDraw();
+              notify({ light: true });
+            }}
+          />
+        }
+      />
       <Notice id="roi-result-problem">{error}</Notice>
       <Hint id="roi-result-summary">{summary}</Hint>
-      <Field label="Show">
-        <BoundSelect
-          id="result-metric"
-          value={metric}
-          onChange={(v) => {
-            state.metric = v as keyof RoiStats;
-            w.changed();
-          }}
-        >
-          {options.map((o) => (
-            <option
-              key={o.value}
-              value={o.value}
-              data-scaled={o.scaled ? '' : undefined}
-              disabled={o.scaled && !panel.scale}
-            >
-              {o.label}
-            </option>
-          ))}
-        </BoundSelect>
-      </Field>
+      <Fields>
+        <Field label="Measurement" title="The measurement the table, Download CSV and Copy table show">
+          <BoundSelect
+            id="result-metric"
+            value={metric}
+            onChange={(v) => {
+              state.metric = v as keyof RoiStats;
+              w.changed();
+            }}
+          >
+            {options.map((o) => (
+              <option
+                key={o.value}
+                value={o.value}
+                data-scaled={o.scaled ? '' : undefined}
+                disabled={o.scaled && !panel.scale}
+              >
+                {o.label}
+              </option>
+            ))}
+          </BoundSelect>
+        </Field>
+      </Fields>
       <ResultTable w={w} panel={panel} res={res} metric={metric} />
+      <MainStep
+        id="roi-dl-csv"
+        variant="primary"
+        icon="download"
+        title="One row per box, one column per region, as in the table"
+        disabled={!!error}
+        onClick={() => download(w, state.metric, false)}
+      >
+        Download CSV
+      </MainStep>
       <SplitActions>
         <Btn
-          id="roi-dl-csv"
-          variant="primary"
+          id="roi-dl-long"
           icon="download"
+          title="One line per region copy with every measurement"
           disabled={!!error}
-          onClick={() => {
-            const p = w.activePanel();
-            const r = w.resultFor(p) as Result;
-            if (hasRows(r)) downloadCsv(w, p, roiCsv([{ panel: p, result: r }]), '_rois');
-          }}
+          onClick={() => download(w, state.metric, true)}
         >
-          Download CSV
+          Long CSV
         </Btn>
         <Btn
           id="roi-copy-tsv"

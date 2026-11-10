@@ -1,6 +1,6 @@
 // The Grid card's Detect rows and columns button. Size detection needs cell borders, which dot plots lack, so
 // it is off for them.
-import { Btn } from '../../../ui/index.ts';
+import { MainStep } from '../../../ui/index.ts';
 import { useWorkspace } from '../../react/use-workspace.ts';
 
 export function DetectButton({ hidden }: { hidden: boolean }) {
@@ -9,8 +9,8 @@ export function DetectButton({ hidden }: { hidden: boolean }) {
   // As before, only the heatmap tool turns it off for dots.
   const dots = w.tool().kind === 'heatmap' && g.anchor === 'centers';
   return (
-    <Btn
-      block
+    // The default variant: a helper that fills Rows and Columns, not a required step (docs/ui.md, Buttons).
+    <MainStep
       id="grid-detect"
       icon="detect"
       hidden={hidden}
@@ -23,6 +23,6 @@ export function DetectButton({ hidden }: { hidden: boolean }) {
       onClick={() => w.commit((p) => w.applyDetectedSize(p))}
     >
       Detect rows and columns
-    </Btn>
+    </MainStep>
   );
 }
