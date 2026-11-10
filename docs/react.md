@@ -1,6 +1,6 @@
 # React UI
 
-How the UI is built since the React migration (branch `react`, October 2026). Read this before changing a sidebar card, the Agent card or Settings. Typing rules are in [typescript.md](typescript.md); the visual UI standard is in CLAUDE.md.
+How the UI is built since the React migration (branch `react`, October 2026). Read this before changing a sidebar card, the Agent card or Settings. Typing rules are in [typescript.md](typescript.md); the visual UI standard is [ui.md](ui.md).
 
 React 19 renders the cards, the Agent card and Settings. The canvas viewer, overlays, results tables, plots and strips stay imperative and are hosted by components through refs (see *What stays imperative*).
 
@@ -24,7 +24,7 @@ Because project objects are mutated in place:
 
 ## `src/ui/` components
 
-They render the classes of the UI standard in `base.css`, so a card cannot drift from it:
+They render the classes of the UI standard ([ui.md](ui.md)) in `base.css`, so a card cannot drift from it:
 
 | Component | Renders |
 | --- | --- |

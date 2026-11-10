@@ -23,4 +23,4 @@ npm run build     # dist/ (npm run preview serves it)
 npm run docs      # regenerate docs/agent.md after changing the agent
 ```
 
-Docs: [docs/usage.md](docs/usage.md) (user manual), [docs/agent.md](docs/agent.md) (agent API, generated), [docs/research.md](docs/research.md), [docs/react.md](docs/react.md), [docs/typescript.md](docs/typescript.md), and [CLAUDE.md](CLAUDE.md) (architecture, conventions, status). CI runs lint, typecheck, tests and build; `main` deploys to GitHub Pages.
+Docs: [docs/usage.md](docs/usage.md) (user manual), [docs/agent.md](docs/agent.md) (agent API, generated), [docs/research.md](docs/research.md), [docs/react.md](docs/react.md), [docs/ui.md](docs/ui.md) (UI and UX guide), [docs/typescript.md](docs/typescript.md), and [CLAUDE.md](CLAUDE.md) (architecture, conventions, status). CI runs lint, typecheck, tests and build; `main` deploys to GitHub Pages.
