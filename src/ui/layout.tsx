@@ -19,9 +19,9 @@ export function SplitActions({ children, ...rest }: ComponentProps<'div'>) {
   );
 }
 
-export function Fields({ children, ...rest }: ComponentProps<'div'>) {
+export function Fields({ children, className, ...rest }: ComponentProps<'div'>) {
   return (
-    <div {...rest} className="fields">
+    <div {...rest} className={className ? `fields ${className}` : 'fields'}>
       {children}
     </div>
   );
@@ -32,25 +32,26 @@ export function Field({
   title,
   stack,
   as = 'label',
+  htmlFor,
   children,
   ...rest
 }: Omit<ComponentProps<'label'>, 'className'> & {
   label: ReactNode;
   stack?: boolean;
-  /** `div` for content that is not one input (a picker, a button group); the label text then is a span. */
+  /** `div` for content that is not one input (a picker, a button group, an InputPair); the label text then
+   * is a span, or a `<label htmlFor>` when `htmlFor` names the input it describes. */
   as?: 'label' | 'div';
 }) {
   const className = stack ? 'field stack' : 'field';
   if (as === 'div')
     return (
       <div {...(rest as ComponentProps<'div'>)} title={title} className={className}>
-        <span>{label}</span>
+        {htmlFor ? <label htmlFor={htmlFor}>{label}</label> : <span>{label}</span>}
         {children}
       </div>
     );
   return (
-    // biome-ignore lint/a11y/noLabelWithoutControl: the control is a child
-    <label {...rest} title={title} className={className}>
+    <label {...rest} htmlFor={htmlFor} title={title} className={className}>
       {label}
       {children}
     </label>

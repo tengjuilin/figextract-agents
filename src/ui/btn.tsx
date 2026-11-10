@@ -21,7 +21,20 @@ export type BtnIcon =
   | 'pause'
   | 'stop'
   | 'reset'
-  | 'settings';
+  | 'settings'
+  | 'check'
+  | 'minus'
+  | 'close'
+  | 'undo'
+  | 'redo'
+  | 'prev'
+  | 'next'
+  | 'upload'
+  | 'ellipse'
+  | 'rect'
+  | 'polygon'
+  | 'agent'
+  | 'decision';
 
 export interface BtnProps extends ComponentProps<'button'> {
   variant?: 'default' | 'primary' | 'danger' | 'subtle';

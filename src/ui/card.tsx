@@ -1,5 +1,5 @@
 // Card structure: Card (the section is the mount point, so it renders its children as they are), CardHead
-// (title, optional tag, status badge right after the title, head actions) and Badge.
+// (title, optional tag, status badge right after the title, head actions or toggles on the right) and Badge.
 import { isValidElement, type ReactNode } from 'react';
 
 export function Card({ children }: { id?: string; children: ReactNode }) {
@@ -31,6 +31,7 @@ export function CardHead({
   tag,
   badge,
   actions,
+  toggles,
 }: {
   title: ReactNode;
   /** Small outlined label after the title, e.g. "optional". */
@@ -39,6 +40,8 @@ export function CardHead({
   badge?: BadgeData | ReactNode;
   /** Buttons for the top right, usually IconBtn. */
   actions?: ReactNode;
+  /** Check toggles for the top right (Results cards); extract.css pushes the first one right. */
+  toggles?: ReactNode;
 }) {
   return (
     <div className="card-head">
@@ -52,6 +55,7 @@ export function CardHead({
         ) : null}
       </h2>
       {isBadgeData(badge) ? <Badge {...badge} /> : (badge as ReactNode)}
+      {toggles}
       {actions ? <div className="head-actions">{actions}</div> : null}
     </div>
   );

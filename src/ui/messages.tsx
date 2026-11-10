@@ -9,13 +9,15 @@ interface MessageProps {
   children?: ReactNode;
   id?: string;
   className?: string;
+  /** For status that changes while the user works (agent status, colormap match). */
+  'aria-live'?: 'polite' | 'assertive' | 'off';
 }
 
-function message(base: string, { children, id, className }: MessageProps) {
+function message(base: string, { children, id, className, 'aria-live': live }: MessageProps) {
   const empty = isEmpty(children);
   if (empty && !id) return null;
   return (
-    <p id={id} className={className ? `${base} ${className}` : base}>
+    <p id={id} className={className ? `${base} ${className}` : base} aria-live={live}>
       {empty ? null : children}
     </p>
   );

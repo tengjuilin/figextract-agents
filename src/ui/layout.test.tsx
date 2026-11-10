@@ -174,3 +174,32 @@ test('Hint with an id stays as an empty element; neutral Badge; Field as div; Op
   assert.equal(container.querySelector('div.field > span')!.textContent, 'Colormap');
   assert.equal(container.querySelector('details')!.open, true);
 });
+
+test('CardHead puts toggles after the badge, before the head actions', () => {
+  const { container } = render(
+    <CardHead
+      title="Results"
+      toggles={<Check label="Show flags" checked={false} onChange={() => {}} />}
+      actions={<button type="button">x</button>}
+    />,
+  );
+  const head = container.querySelector('.card-head')!;
+  assert.deepEqual(
+    [...head.children].map((c) => c.className || c.tagName),
+    ['H2', 'check', 'head-actions'],
+  );
+});
+
+test('Field as div with htmlFor labels its input; Fields merges className', () => {
+  const { container } = render(
+    <Fields className="bar-cmap">
+      <Field as="div" label="Length" htmlFor="len">
+        <InputPair>
+          <input id="len" />
+        </InputPair>
+      </Field>
+    </Fields>,
+  );
+  assert.equal(container.querySelector('.fields')!.className, 'fields bar-cmap');
+  assert.equal(screen.getByLabelText('Length').id, 'len');
+});
