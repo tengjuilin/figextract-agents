@@ -23,7 +23,7 @@
   },
   "dependencies": {
     "@openrouter/sdk": "1.4.10",
-    "colormeris": "file:../colormeris/packages/core/colormeris-0.1.0.tgz",
+    "colormeris": "0.1.0",
     "jszip": "3.10.2",
     "pdfjs-dist": "6.3.289",
     "react": "19.3.1",
