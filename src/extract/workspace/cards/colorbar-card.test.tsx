@@ -377,11 +377,11 @@ test('the reference match line: levels, direction flip from the ticks, and Use i
   assert.equal(line.className, 'bar-match hint exact');
   assert.equal(line.querySelector('code')!.textContent, 'viridis_r');
   assert.match(line.textContent!, /^Reference colormap: viridis_r \(.*, ΔE 0\.4\)\. Same colors: cividis_r, plasma\./);
-  assert.match(line.querySelector('a')!.href, /colormaps\.html\?map=viridis#browse$/);
+  assert.equal(line.querySelector('a'), null);
   fireEvent.click(screen.getByText('Use its colors'));
   assert.deepEqual(used, [m]);
   rerender(<BarMatch match={{ ...m, level: 'none' }} lowAtStart={null} onUse={() => {}} />);
-  assert.match(line.textContent!, /^No known colormap matches this colorbar \(closest: viridis, ΔE 0\.4\)\. View$/);
+  assert.match(line.textContent!, /^No known colormap matches this colorbar \(closest: viridis, ΔE 0\.4\)\. $/);
   assert.equal(screen.queryByText('Use its colors'), null);
   rerender(<BarMatch match={null} lowAtStart={null} onUse={() => {}} />);
   assert.equal(document.getElementById('bar-match')!.hidden, true);

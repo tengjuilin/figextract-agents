@@ -1,6 +1,6 @@
 /* Shared by every page: tokens, base, top bar, buttons and fields, the UI
    standard components, notices, link buttons and the tool switcher. Each page
-   adds its own sheet: landing.css, extract.css or colormaps.css. */
+   adds its own sheet: landing.css or extract.css. */
 
 :root {
   --bg: #f4f5f7;
@@ -304,8 +304,7 @@ input[type="checkbox"] {
   align-items: center;
 }
 
-/* ---- UI standard components. The sidebar rules apply to extract.html; hints,
-   fields, chips and disclosures are also used by colormaps.html. See "UI standard" in CLAUDE.md. ---- */
+/* ---- UI standard components. The sidebar rules apply to extract.html. See "UI standard" in CLAUDE.md. ---- */
 /* Every button, input and select in the sidebar has one height, so mixed rows line up. */
 .extract .sidebar .btn,
 .extract .sidebar input:not([type="checkbox"]):not([type="range"]),
@@ -695,8 +694,8 @@ details.options[open] > summary::before,
   display: none;
 }
 
-/* Colormap picker (colormaps/map-picker.js): a search field with a list of
-   maps and their strips. Used by Recolor and Compare and by the colorbar card. */
+/* Colormap picker (workspace/cards/map-picker.tsx): a search field with a list of
+   maps and their strips. Used by the colorbar card. */
 .cmap-paint {
   display: block;
   width: 100%;

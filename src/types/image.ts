@@ -27,21 +27,6 @@ export interface UV {
  */
 export type Corners = Point[];
 
-/** [r, g, b], 0–255. Means and medians may be fractional. */
-export type Rgb = number[];
-
-/** [L*, a*, b*] in CIELAB. */
-export type Lab = number[];
-
-/**
- * An RGBA pixel buffer, row-major, 4 bytes per pixel. ImageData satisfies it,
- * and the tests build plain objects of this shape.
- */
-export interface PixelImage {
-  width: number;
-  height: number;
-  data: Uint8ClampedArray;
-}
-
-/** Color distance used to match colors to a colorbar (core/color.ts colorDistance). */
-export type DistanceName = 'de2000' | 'de76';
+// Colors and pixel buffers: Rgb ([r, g, b], 0–255), Lab (CIELAB), PixelImage
+// (row-major RGBA, ImageData fits) and DistanceName, from the colormeris package.
+export type { DistanceName, Lab, PixelImage, Rgb } from 'colormeris';

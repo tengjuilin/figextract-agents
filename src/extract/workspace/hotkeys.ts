@@ -20,12 +20,12 @@ export function setupWorkspaceHotkeys(w: WorkspaceContext): HotkeysMembers {
     w.viewer.crosshair = on;
     w.setPressed($('toggle-crosshair'), on);
     try {
-      localStorage.setItem('colormeris.crosshair', on ? '1' : '0');
+      localStorage.setItem('figextract.crosshair', on ? '1' : '0');
     } catch {}
     w.viewer.requestDraw();
   }
   try {
-    if (localStorage.getItem('colormeris.crosshair') === '1') setCrosshair(true);
+    if (localStorage.getItem('figextract.crosshair') === '1') setCrosshair(true);
   } catch {}
   $('toggle-crosshair').addEventListener('click', () => setCrosshair(!w.viewer.crosshair));
   $('toggle-overlay').addEventListener('click', () => {

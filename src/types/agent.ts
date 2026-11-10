@@ -1,5 +1,5 @@
 // Shapes shared by the agent layer: the typed actions (agent/schema.ts), the
-// window.colormeris API (agent/api.ts), the LLM chat loop (agent/runner.ts)
+// window.figextract API (agent/api.ts), the LLM chat loop (agent/runner.ts)
 // and the decision model (agent/decide.ts, agent/decision-tools.ts,
 // agent/openrouter-client.ts). Results the LLM only reads stay loose.
 
@@ -174,7 +174,7 @@ export interface AgentPolicy {
   humanSources: string[];
 }
 
-// ---------------------------------------------------------------- window.colormeris
+// ---------------------------------------------------------------- window.figextract
 
 /** What api.run returns. It never throws; mutating actions also return the new state. */
 export type ActionResult =
@@ -192,8 +192,8 @@ export interface BatchAction {
   args?: ActionArgs;
 }
 
-/** The typed agent API (createAgentApi), exposed as window.colormeris. */
-export interface ColormerisApi {
+/** The typed agent API (createAgentApi), exposed as window.figextract. */
+export interface FigExtractApi {
   version: number;
   run: (name: string, args?: ActionArgs, opts?: RunOptions) => Promise<ActionResult>;
   /** Runs in order and stops at the first failure. */

@@ -1,8 +1,8 @@
 // Agent API: binds the typed actions of agent/schema.ts to a live workspace
-// and exposes them as window.colormeris, so an LLM or a script can
+// and exposes them as window.figextract, so an LLM or a script can
 // drive the page without clicking pixels:
 //
-//   await colormeris.run('set_grid', {topLeft: {x: 40, y: 60}, bottomRight: {x: 520, y: 400}})
+//   await figextract.run('set_grid', {topLeft: {x: 40, y: 60}, bottomRight: {x: 520, y: 400}})
 //   → {ok: true, result, state}   or   {ok: false, error}
 //
 // Answers to typed questions carry a confidence. Below `policy.minConfidence`
@@ -10,7 +10,7 @@
 // human. Every mutating call and every decision is logged; both logs go into
 // the project zip (agent/actions.json, agent/decisions.json).
 
-import { rgbToLab } from '../core/color.ts';
+import { rgbToLab } from 'colormeris';
 import {
   labToT,
   makeValueFn,
@@ -31,8 +31,8 @@ import type {
   ActionLogEntry,
   ActionResult,
   BatchAction,
-  ColormerisApi,
   Decision,
+  FigExtractApi,
   HeatmapResult,
   MapResult,
   Panel,
@@ -67,9 +67,9 @@ import {
 // One handler per action, taking its arguments as run() validated them against ACTIONS' JSON Schema.
 type Handlers = { [K in keyof ActionArgsMap]: (args: ActionArgsMap[K]) => unknown };
 
-export function createAgentApi(ws: Workspace): ColormerisApi {
+export function createAgentApi(ws: Workspace): FigExtractApi {
   const { app } = ws;
-  const policy: ColormerisApi['policy'] = { minConfidence: 0.9, humanSources: ['human'] };
+  const policy: FigExtractApi['policy'] = { minConfidence: 0.9, humanSources: ['human'] };
   const actionLog: ActionLogEntry[] = [];
   const decisions: Decision[] = [];
 

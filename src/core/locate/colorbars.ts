@@ -1,8 +1,8 @@
 // Finding colorbars on a page and snapping a rough box to a strip.
 
+import { upperMedian } from 'colormeris';
 import type { Box, PixelImage, Rgb } from '../../types/index.ts';
 import { readPixel } from '../grid.ts';
-import { upperMedian } from '../stats.ts';
 import type { BarTools } from './bar-strips.ts';
 import { BAR_STEP, BAR_THICK, barTools, followStrip } from './bar-strips.ts';
 import { componentsOf } from './helpers.ts';

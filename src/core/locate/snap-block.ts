@@ -1,7 +1,7 @@
 // snapBlock: the filled block of cells inside a rough box.
 
+import { upperMedian } from 'colormeris';
 import type { Box, PixelImage } from '../../types/index.ts';
-import { upperMedian } from '../stats.ts';
 import { clamp, FAINT_FILL, FILL, FRAME_GAP, FRAME_LINE, runs, SPAN_FILL } from './helpers.ts';
 import { fitFrame, lineTools } from './line-tools.ts';
 import type { PixelTest } from './types.ts';

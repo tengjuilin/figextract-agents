@@ -1,8 +1,8 @@
 // Bin steps of a binned bar and the tick marks built from the chosen label side.
 
+import { upperMedian } from 'colormeris';
 import type { Box, PixelImage, Rgb } from '../../types/index.ts';
 import { readPixel } from '../grid.ts';
-import { upperMedian } from '../stats.ts';
 import { BAR_STEP } from './bar-strips.ts';
 import { background, differs } from './helpers.ts';
 import type { TickBest, TickLabel, TickLabelsResult } from './types.ts';

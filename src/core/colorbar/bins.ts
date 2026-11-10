@@ -1,8 +1,8 @@
 // Binned (discrete) colorbars: finding the flat bins of a sampled bar,
 // labelling them with values from the ticks, and the nearest bin of a color.
+
+import { colorDistance, deltaE76, labToRgb, median } from 'colormeris';
 import type { ColorBin, ColorbarSample, Lab, LabelledBin, OpenSide, TickWithT } from '../../types/index.ts';
-import { colorDistance, deltaE76, labToRgb } from '../color.ts';
-import { median } from '../stats.ts';
 import { DEFAULT_SAMPLES, makeValueFn } from './calibration.ts';
 
 // A binned (discrete) colorbar is a few flat colors with sharp steps

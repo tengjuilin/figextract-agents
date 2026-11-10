@@ -3,7 +3,7 @@
 // through rendered page images with pixel rulers. `client` is an OpenRouter
 // SDK client (or anything with chat.send).
 
-import { rgbToHex } from '../core/color.ts';
+import { rgbToHex } from 'colormeris';
 import { colorAtT } from '../core/colorbar.ts';
 import { bilinear, cellSamplePolygon, outerCorners } from '../core/grid.ts';
 import { canvasDataUrl, renderPdfPage } from '../extract/pdf-loader.ts';
@@ -13,7 +13,7 @@ import type {
   Box,
   ChatMessage,
   ChatRequest,
-  ColormerisApi,
+  FigExtractApi,
   HeatmapResult,
   Point,
   RenderedView,
@@ -93,7 +93,7 @@ export type RenderViewFn = (opts?: RenderViewOptions) => Promise<RenderedView>;
 
 type ToView = (p: Point) => Point;
 
-export function createAgentRunner(ws: Workspace, api: ColormerisApi) {
+export function createAgentRunner(ws: Workspace, api: FigExtractApi) {
   const { app } = ws;
 
   // ------------------------------------------------------------ images
@@ -328,7 +328,7 @@ export function createAgentRunner(ws: Workspace, api: ColormerisApi) {
     const decisionMode = mode === 'decision';
     // One id for the whole run keeps the requests on the provider that
     // holds the cache (sticky routing).
-    const sessionId = `colormeris-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+    const sessionId = `figextract-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
     const usage = newUsage();
     const emit = (type: RunEventType, data: object) => onEvent(type, { ...data, usage: { ...usage } } as RunEventData);
     const decision = decisionMode

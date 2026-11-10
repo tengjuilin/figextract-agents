@@ -138,7 +138,7 @@ export function setupRoiTool(ws: Workspace) {
   ws.addTool({
     kind: 'roi',
     label: 'ROI',
-    title: 'Colormeris · ROI',
+    title: 'FigExtract Agents · ROI',
     computeResult,
     resultKey: (panel) => [
       gridGeometry(panel.grid),

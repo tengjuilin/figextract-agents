@@ -19,7 +19,7 @@ type Raw = any;
 // saved to or read from a settings zip (settings.json inside). Unlike
 // project.json these belong to the user, not to a figure.
 
-export const SETTINGS_SCHEMA = 'colormeris-settings';
+export const SETTINGS_SCHEMA = 'figextract-settings';
 export const SETTINGS_VERSION = 1;
 export const SETTINGS_FILE = 'settings.json';
 
@@ -348,7 +348,7 @@ export function serializeSettings(settings: Settings, { includeKey = false }: { 
 // carried an API key; without one the caller keeps the current key.
 export function parseSettings(json: Raw) {
   if (!json || typeof json !== 'object' || json.schema !== SETTINGS_SCHEMA)
-    throw new Error('Not a Colormeris settings file.');
+    throw new Error('Not a FigExtract Agents settings file.');
   if (json.version > SETTINGS_VERSION)
     throw new Error(`Settings version ${json.version} is newer than this app understands (${SETTINGS_VERSION}).`);
   return {

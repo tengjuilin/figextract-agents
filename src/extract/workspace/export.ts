@@ -55,7 +55,7 @@ export function setupWorkspaceExport(w: WorkspaceContext): ExportMembers {
         pagePngs,
         files,
       });
-      download(blob, `colormeris-${safeFileName(app.project.name)}.zip`);
+      download(blob, `figextract-${safeFileName(app.project.name)}.zip`);
       w.status('');
       if (incomplete)
         w.toast(

@@ -30,7 +30,7 @@ export function makeOpenRouterClient(
   return new sdk.OpenRouter({
     // Behind a proxy the key can be empty; the proxy replaces this header.
     apiKey: key || 'proxy',
-    appTitle: 'Colormeris',
+    appTitle: 'FigExtract Agents',
     ...(location.protocol.startsWith('http') ? { httpReferer: location.origin } : {}),
     ...(base ? { serverURL: base } : {}),
   });
@@ -82,7 +82,7 @@ export function makeDecisionClient({ key, base }: { key?: string; base?: string 
       headers: {
         'content-type': 'application/json',
         authorization: `Bearer ${key || 'proxy'}`,
-        'x-title': 'Colormeris',
+        'x-title': 'FigExtract Agents',
         ...(location.protocol.startsWith('http') ? { 'http-referer': location.origin } : {}),
       },
       body: JSON.stringify(body),

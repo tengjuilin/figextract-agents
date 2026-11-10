@@ -1,4 +1,4 @@
-import { rgbToHex } from '../../core/color.ts';
+import { rgbToHex } from 'colormeris';
 import { colorAtT } from '../../core/colorbar.ts';
 import { bilinear, cellSamplePolygon, outerCorners } from '../../core/grid.ts';
 import type { Cell, HeatmapResult, Panel, ToolHooks, ViewerApi, Workspace } from '../../types/index.ts';
@@ -19,7 +19,7 @@ export function setupHeatmapTool(ws: Workspace) {
   ws.addTool({
     kind: 'heatmap',
     label: 'heatmap',
-    title: 'Colormeris · Heatmap',
+    title: 'FigExtract Agents · Heatmap',
     computeResult: (panel, image) => extractPanel(image, panel),
     resultKey: (panel) => [gridGeometry(panel.grid), panel.colorbar, panel.settings],
     panelProblem,

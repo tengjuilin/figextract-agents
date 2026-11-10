@@ -1,7 +1,7 @@
 // Colorbar strips: pixel tests for bars and following a strip to its ends.
 
+import { onWhite } from 'colormeris';
 import type { Box, PixelImage, Rgb } from '../../types/index.ts';
-import { onWhite } from '../color.ts';
 import { readPixel } from '../grid.ts';
 import { background, clamp, differs, FILL, mean, NEUTRAL, noiseTol, PALE, STRONG, stroke } from './helpers.ts';
 import type { Bar } from './types.ts';

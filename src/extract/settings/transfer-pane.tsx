@@ -14,7 +14,7 @@ export function TransferPane() {
   async function exportZip() {
     if (includeKey && !ctl.settings.agent.key) ws.toast('There is no API key to include.');
     const blob = await buildSettingsZip(JSZip, ctl.settings, { includeKey });
-    ws.download(blob, 'colormeris-settings.zip');
+    ws.download(blob, 'figextract-settings.zip');
   }
 
   async function importFile(input: HTMLInputElement) {

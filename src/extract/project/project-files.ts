@@ -101,7 +101,7 @@ export function safeFileName(name: unknown) {
   return s || 'untitled';
 }
 
-const README = `Colormeris project archive
+const README = `FigExtract Agents project archive
 
 project.json          Calibration metadata (grid corners, colorbar line and ticks,
                       labels, settings, page and review of each panel).
@@ -112,7 +112,7 @@ data/                 Extracted data as CSV, one or more files per panel.
 agent/                actions.json and decisions.json: what the agent API and the
                       heatmap agent changed and decided (with confidences).
 
-Load this zip back into Colormeris to review or re-run the extraction.
+Load this zip back into FigExtract Agents to review or re-run the extraction.
 `;
 
 const pageImagePath = (page: number | string) => `source/page-${page}.png`;

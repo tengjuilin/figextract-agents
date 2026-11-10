@@ -1,8 +1,8 @@
+import { cmapData, mapByName, mapColors } from 'colormeris';
 import { type KeyboardEvent, memo, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import { cmapData, mapByName, mapColors } from '../core/colormap-library.ts';
-import type { ColormapEntry, Rgb } from '../types/index.ts';
-import { flushSafely } from '../ui/flush.ts';
+import type { ColormapEntry, Rgb } from '../../../types/index.ts';
+import { flushSafely } from '../../../ui/flush.ts';
 
 // A text field that filters the colormaps as you type (an ARIA combobox),
 // shared by Recolor (pick the new map), Compare (add maps) and the colorbar

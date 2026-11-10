@@ -1,4 +1,4 @@
-import { onWhite, rgbToLab } from '../../core/color.ts';
+import { onWhite, rgbToLab } from 'colormeris';
 import { colorbarSamples, labToT, makeValueFn } from '../../core/colorbar.ts';
 import { cellAt, readPixel } from '../../core/grid.ts';
 import type {

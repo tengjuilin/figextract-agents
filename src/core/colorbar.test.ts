@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
+import { colormapSamples, deltaE76, deltaE2000, rgbToLab } from 'colormeris';
 import { test } from 'vitest';
 import { cmap, makeImage, paintColorbar, setPixel, VIRIDISH } from '../testing/helpers.ts';
 import type { ColorbarSample, Rgb } from '../types/index.ts';
-import { deltaE76, deltaE2000, rgbToLab } from './color.ts';
 import {
   colorAtT,
   colorbarBins,
@@ -20,7 +20,6 @@ import {
   snapTick,
   tickProblem,
 } from './colorbar.ts';
-import { colormapSamples } from './colormap-match.ts';
 
 const close = (a: number, b: number, eps: number, msg = '') => assert.ok(Math.abs(a - b) < eps, `${a} vs ${b} ${msg}`);
 

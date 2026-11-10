@@ -1,4 +1,4 @@
-import { rgbToHex } from '../../core/color.ts';
+import { rgbToHex } from 'colormeris';
 import { pointAtT, projectT } from '../../core/colorbar.ts';
 import { cellAt, detectGridSize, readPixel, rectCorners } from '../../core/grid.ts';
 import type { Cell, Handle, InteractMembers, Panel, Point, WorkspaceContext } from '../../types/index.ts';

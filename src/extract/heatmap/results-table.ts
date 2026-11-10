@@ -1,4 +1,4 @@
-import { rgbToHex } from '../../core/color.ts';
+import { rgbToHex } from 'colormeris';
 import type { Cell, HeatmapCell, HeatmapResult, Panel, Rgb } from '../../types/index.ts';
 import { effectiveLabels } from '../project/project.ts';
 import { formatNumber } from '../project/project-files.ts';

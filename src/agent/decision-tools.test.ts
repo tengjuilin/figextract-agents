@@ -2,7 +2,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'vitest';
 import { createProject } from '../extract/project/project.ts';
-import type { ColormerisApi, DecideFn, Workspace } from '../types/index.ts';
+import type { DecideFn, FigExtractApi, Workspace } from '../types/index.ts';
 import { createDecisionTools } from './decision-tools.ts';
 import { newUsage } from './run-messages.ts';
 
@@ -26,7 +26,7 @@ function setup() {
     return { answers: { present: { noul: 1 }, cells: { box: { left: 0.1, top: 0.1, right: 0.5, bottom: 0.5 } } } };
   };
   const renderView = async () => ({ dataUrl: 'data:', frame: { x0: 0, y0: 0, scale: 1, width: 1000, height: 800 } });
-  const api = { run: async () => ({ ok: true, result: null }) } as unknown as ColormerisApi;
+  const api = { run: async () => ({ ok: true, result: null }) } as unknown as FigExtractApi;
   const tools = createDecisionTools(ws, api, { renderView, decide, usage: newUsage() });
   return { tools, asked, panel };
 }

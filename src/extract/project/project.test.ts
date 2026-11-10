@@ -63,8 +63,8 @@ test('project serializes and parses back', () => {
 
 test('parseProject rejects foreign or future files', () => {
   assert.throws(() => parseProject({ schema: 'other' }), /schema/);
-  assert.throws(() => parseProject({ schema: 'colormeris-project', version: 99, panels: [{}] }), /version/);
-  assert.throws(() => parseProject({ schema: 'colormeris-project', version: 1, panels: [] }), /no panels/);
+  assert.throws(() => parseProject({ schema: 'figextract-project', version: 99, panels: [{}] }), /version/);
+  assert.throws(() => parseProject({ schema: 'figextract-project', version: 1, panels: [] }), /no panels/);
 });
 
 test('rescalePanel scales every coordinate', () => {
@@ -229,7 +229,7 @@ test('one project holds heatmap and ROI panels', () => {
 
 test('version 1 files: kind applies to every panel, missing kind means heatmap', () => {
   const v1 = (extra: object) => ({
-    schema: 'colormeris-project',
+    schema: 'figextract-project',
     version: 1,
     ...extra,
     panels: [{ name: 'a' }, { name: 'b', rois: [] }],
@@ -243,11 +243,11 @@ test('version 1 files: kind applies to every panel, missing kind means heatmap',
     ['heatmap', 'heatmap'],
   );
   assert.throws(() => parseProject(v1({ kind: 'ivis' })), /unknown tool "ivis"/);
-  assert.throws(() => parseProject({ schema: 'colormeris-project', version: 3, panels: [{}] }), /version/);
+  assert.throws(() => parseProject({ schema: 'figextract-project', version: 3, panels: [{}] }), /version/);
 });
 
 test('version 2 panels with an unknown tool are refused', () => {
-  const json = { schema: 'colormeris-project', version: 2, panels: [{ name: 'a', tool: 'ivis' }] };
+  const json = { schema: 'figextract-project', version: 2, panels: [{ name: 'a', tool: 'ivis' }] };
   assert.throws(() => parseProject(json), /unknown tool "ivis"/);
 });
 

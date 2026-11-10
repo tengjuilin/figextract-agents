@@ -3,10 +3,9 @@
 // colorbar. The values (extractFieldValues) depend only on the image, corners, colorbar, settings and bin; the
 // coordinates (coords.ts fieldCoords) are added apart, so the Map tool caches the values alone.
 
-import { deltaE76, onWhite } from '../../../core/color.ts';
+import { deltaE76, medianInPlace, onWhite } from 'colormeris';
 import { colorAtT } from '../../../core/colorbar.ts';
 import { bilinear, gridPixelSize, invertBilinear, readPixel } from '../../../core/grid.ts';
-import { medianInPlace } from '../../../core/stats.ts';
 import type {
   ColorbarSample,
   Corners,

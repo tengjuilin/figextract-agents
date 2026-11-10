@@ -1,9 +1,8 @@
 // Browser-side timing harness for the React migration's performance budget
 // (docs/react.md). Paste into the page (built-in browser javascript_tool) and
-// run `await perfBench.extract()` on extract.html#heatmap or
-// `await perfBench.colormaps()` on colormaps.html. Medians of several runs, in ms.
+// run `await perfBench.extract()` on extract.html#heatmap. Medians of several runs, in ms.
 // It drives the UI only through ids and classes both the old and the React
-// UI keep (#grid-rows, .cmap-th, .cmap-search, .cmap-row), so the same
+// UI keep (#grid-rows), so the same
 // numbers are comparable before and after.
 
 globalThis.perfBench = (() => {
@@ -73,7 +72,7 @@ globalThis.perfBench = (() => {
 
   async function extract() {
     window.confirm = () => true;
-    const api = window.colormeris;
+    const api = window.figextract;
     const out = { load: load() };
     await api.run('open_url', { url: figure() });
     await api.batch([
@@ -107,33 +106,5 @@ globalThis.perfBench = (() => {
     return out;
   }
 
-  async function colormaps() {
-    const out = { load: load() };
-    out.rowsAtLoad = document.querySelectorAll('.cmap-row').length;
-    const rev = [...document.querySelectorAll('label')]
-      .find((l) => l.textContent.trim() === 'Reversed')
-      ?.querySelector('input');
-    if (rev) out.reversedToggle = await runs(6, () => rev.click());
-    const sortBtn = document.querySelector('.cmap-th[data-sort]');
-    if (sortBtn) out.sortClick = await runs(6, () => sortBtn.click());
-    const search = document.querySelector('.cmap-search');
-    if (search)
-      out.search = await runs(4, async () => {
-        typeInto(search, 'vir');
-        await frame();
-        typeInto(search, '');
-      });
-    // Let the idle metric precompute and lazy row builds settle first, or they land in the tab timings.
-    await new Promise((r) => setTimeout(r, 1000));
-    for (const tab of ['compare', 'identify', 'recolor', 'cvd', 'browse']) {
-      out[`tab_${tab}`] = await runs(3, async () => {
-        location.hash = `#${tab}`;
-        await frame();
-      });
-    }
-    out.longTasks = longTasks;
-    return out;
-  }
-
-  return { extract, colormaps };
+  return { extract };
 })();

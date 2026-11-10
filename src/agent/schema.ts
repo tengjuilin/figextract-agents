@@ -2,7 +2,7 @@
 // scripts). This file is pure: the action catalogue with JSON Schemas for
 // their arguments, a small validator, the state snapshot and the typed
 // questions an agent answers. agent/api.ts binds it to a live workspace as
-// window.colormeris.
+// window.figextract.
 //
 // Coordinates are image pixels of the panel's page image, as in project.json.
 // `t` is the position along the colorbar: 0 at `start`, 1 at `end`.
@@ -34,7 +34,7 @@ import type {
 } from '../types/index.ts';
 import { round } from './round.ts';
 
-export const AGENT_SCHEMA = 'colormeris-agent';
+export const AGENT_SCHEMA = 'figextract-agent';
 export const AGENT_VERSION = 1;
 
 const point: JsonSchema = {

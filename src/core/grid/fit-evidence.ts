@@ -1,7 +1,7 @@
 // Evidence for cell borders along one axis (used by fitCellCounts).
 
+import { medianInPlace } from 'colormeris';
 import type { Corners, PixelImage } from '../../types/index.ts';
-import { medianInPlace } from '../stats.ts';
 import { bilinear } from './geometry.ts';
 import { readPixel } from './sampling.ts';
 

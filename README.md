@@ -1,14 +1,15 @@
-# Colormeris
+# FigExtract Agents
 
-Colormeris is a set of static web pages that turn colors in scientific figures back into numbers. Load a PDF, PNG or JPG, mark the colorbar and read values out as CSV. Everything runs in the browser; nothing is uploaded except when you run the heatmap agent (page images and values go to OpenRouter and your chosen models).
+FigExtract Agents is a set of static web pages that turn colors in scientific figures back into numbers. Load a PDF, PNG or JPG, mark the colorbar and read values out as CSV. Everything runs in the browser; nothing is uploaded except when you run the heatmap agent (page images and values go to OpenRouter and your chosen models).
 
 - `index.html`: landing page.
 - `extract.html`: three tools sharing the file, viewer, colorbar calibration and project zip: **Heatmap** (one value per grid cell), **ROI** (signal in regions, e.g. IVIS images), **Map** (near-continuous fields, value matrix and line profiles). Switch with `#heatmap` / `#roi` / `#map`.
-- `colormaps.html`: browse, compare, identify, recolor and CVD-simulate 1063 colormaps.
+
+Live at [tengjuilin.github.io/figextract-agents](https://tengjuilin.github.io/figextract-agents/). The project was split from Colormeris on 2026-11-10 (history before that is shared); the colormap viewer stayed there.
 
 ## Heatmap agent
 
-The *Agent* card calibrates every heatmap on the chosen pages. Enter an [OpenRouter](https://openrouter.ai/keys) key in *Settings → Agent*, or keep it out of the browser: put `OPENROUTER_API_KEY=…` in `.env`, run `npm run proxy` and set *API base URL* to `http://localhost:8787/api/v1`. Modes: **Agent only** (the LLM does everything) and **Agent decision** (the LLM describes heatmaps, a decision model locates them, the app snaps and counts). Checks below *Min. confidence* go to *Needs review*. Typed actions are exposed as `window.colormeris`: see [docs/agent.md](docs/agent.md).
+The *Agent* card calibrates every heatmap on the chosen pages. Enter an [OpenRouter](https://openrouter.ai/keys) key in *Settings → Agent*, or keep it out of the browser: put `OPENROUTER_API_KEY=…` in `.env`, run `npm run proxy` and set *API base URL* to `http://localhost:8787/api/v1`. Modes: **Agent only** (the LLM does everything) and **Agent decision** (the LLM describes heatmaps, a decision model locates them, the app snaps and counts). Checks below *Min. confidence* go to *Needs review*. Typed actions are exposed as `window.figextract`: see [docs/agent.md](docs/agent.md).
 
 ## Development
 
@@ -16,7 +17,7 @@ Node 22.18+. TypeScript (strict) with Vite.
 
 ```bash
 npm install
-npm run dev       # http://localhost:8000
+npm run dev       # http://localhost:8010
 npm run check     # biome + tsc + vitest, before every commit
 npm run build     # dist/ (npm run preview serves it)
 npm run docs      # regenerate docs/agent.md after changing the agent

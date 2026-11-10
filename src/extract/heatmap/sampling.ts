@@ -1,4 +1,4 @@
-import { rgbToLab } from '../../core/color.ts';
+import { rgbToLab } from 'colormeris';
 import {
   colorbarBins,
   colorbarSamples,

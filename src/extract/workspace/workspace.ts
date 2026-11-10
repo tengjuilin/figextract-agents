@@ -32,7 +32,7 @@ import { allSections, sectionVisible } from './sections.ts';
 import { setupWorkspaceSource } from './source.ts';
 import { notify } from './store.ts';
 
-// Shared workspace for the Colormeris tools (extract.html): source loading
+// Shared workspace for the FigExtract Agents tools (extract.html): source loading
 // and PDF pages, the zoomable viewer, panels, the grid and colorbar
 // calibration, undo, keyboard shortcuts and project zips. Tools
 // (heatmap/heatmap-tool.ts, roi/roi-tool.ts, map/map-tool.ts) register with

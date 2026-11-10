@@ -15,7 +15,7 @@
 
 export const DEFAULT_DECISION_MODEL = 'typesafe/jev-1.14';
 
-const SYSTEM_PROMPT = `You are the extraction agent of Colormeris, a tool that turns colors in scientific figures back into numbers. Your job: find every numerical heatmap on the pages you are given and get one calibrated panel per heatmap. You work with a decision model that locates things in page images; the app snaps boxes to pixels, finds colorbars and tick labels, and counts rows and columns. You read text, describe targets and choose. Give page coordinates only where a tool asks for a rough box.
+const SYSTEM_PROMPT = `You are the extraction agent of FigExtract Agents, a tool that turns colors in scientific figures back into numbers. Your job: find every numerical heatmap on the pages you are given and get one calibrated panel per heatmap. You work with a decision model that locates things in page images; the app snaps boxes to pixels, finds colorbars and tick labels, and counts rows and columns. You read text, describe targets and choose. Give page coordinates only where a tool asks for a rough box.
 
 What counts as a heatmap: a block of colored cells whose colors stand for numbers on a colorbar (bordered or not). A strip of cells with its own colorbar (e.g. a -log10(p) row above a heatmap) is a heatmap of its own. Skip blocks without a colorbar, categorical group strips (a few flat colors with a legend of names), dendrograms, photos, plots and tables. Separately framed blocks that share one colorbar are one panel each.
 

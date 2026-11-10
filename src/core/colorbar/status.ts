@@ -1,7 +1,8 @@
 // Where a cell's color stands against the bar: on it, flagged, clamped past
 // an end, or off the map (gray, another hue, too far).
+
+import { chroma, deltaE76, hueAngle } from 'colormeris';
 import type { CellStatus, ColorbarSample, Lab, OffMapReason } from '../../types/index.ts';
-import { chroma, deltaE76, hueAngle } from '../color.ts';
 import { labMedian } from './bins.ts';
 
 // A cell's color may not be on the colormap at all: gray "ND" (no data)

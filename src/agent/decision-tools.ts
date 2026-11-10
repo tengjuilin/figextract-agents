@@ -13,12 +13,12 @@ import { ticksWithT } from '../extract/project/project.ts';
 import type {
   ActionArgs,
   Box,
-  ColormerisApi,
   DecideFn,
   DecisionArgsMap,
   DecisionImagePart,
   DecisionQuestion,
   DecisionTools,
+  FigExtractApi,
   HeatmapResult,
   Panel,
   Point,
@@ -96,7 +96,7 @@ const imagePart = (url: string): DecisionImagePart => ({ type: 'image_url', imag
 
 export function createDecisionTools(
   ws: Workspace,
-  api: ColormerisApi,
+  api: FigExtractApi,
   {
     renderView,
     decide,

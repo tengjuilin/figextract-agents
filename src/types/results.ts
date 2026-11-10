@@ -2,6 +2,7 @@
 // heatmap/sampling.ts, roi/quantify.ts and map/field.ts. Results are shared by
 // the workspace, the exports and the agent, so their shapes live here.
 
+import type { ColorbarSample } from 'colormeris';
 import type { Lab, Point, Rgb } from './image.ts';
 import type { ColorbarScale, Roi, ScaleUnit } from './project.ts';
 
@@ -13,12 +14,8 @@ export interface ErrorResult {
   error: string;
 }
 
-/** One sample of a colorbar (sampleColorbar, colormapSamples): t in [0, 1] from start to end. */
-export interface ColorbarSample {
-  t: number;
-  rgb: Rgb;
-  lab: Lab;
-}
+/** One sample of a colorbar (sampleColorbar, colormapSamples), from the colormeris package. */
+export type { ColorbarSample } from 'colormeris';
 
 /** A flat bin of a binned colorbar (colorbarBins). */
 export interface ColorBin {

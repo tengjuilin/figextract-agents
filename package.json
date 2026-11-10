@@ -1,8 +1,8 @@
 {
-  "name": "colormeris",
+  "name": "figextract-agents",
   "version": "0.1.0",
   "private": true,
-  "description": "Static web app that turns colors in scientific figures back into numbers (heatmap, ROI and map tools) and browses colormaps.",
+  "description": "Static web app that turns colors in scientific figures back into numbers (heatmap, ROI and map tools), with an LLM agent for heatmaps.",
   "type": "module",
   "scripts": {
     "predev": "node scripts/copy-pdfjs-assets.mjs",
@@ -23,6 +23,7 @@
   },
   "dependencies": {
     "@openrouter/sdk": "1.4.10",
+    "colormeris": "file:../colormeris/packages/core/colormeris-0.1.0.tgz",
     "jszip": "3.10.2",
     "pdfjs-dist": "6.3.289",
     "react": "19.3.1",

@@ -1,8 +1,8 @@
 # React UI
 
-How the UI is built since the React migration (branch `react`, October 2026). Read this before changing a sidebar card, the Agent card, Settings or the colormaps page. Typing rules are in [typescript.md](typescript.md); the visual UI standard is in CLAUDE.md.
+How the UI is built since the React migration (branch `react`, October 2026). Read this before changing a sidebar card, the Agent card or Settings. Typing rules are in [typescript.md](typescript.md); the visual UI standard is in CLAUDE.md.
 
-React 19 renders the cards and the colormaps page. The canvas viewer, overlays, results tables, plots and strips stay imperative and are hosted by components through refs (see *What stays imperative*).
+React 19 renders the cards, the Agent card and Settings. The canvas viewer, overlays, results tables, plots and strips stay imperative and are hosted by components through refs (see *What stays imperative*).
 
 ## Extract page: the bridge
 
@@ -53,28 +53,19 @@ Every extract card follows `src/extract/workspace/cards/panels-card.tsx`.
 
 Tool contexts reach the cards through small modules built with `createToolContext` (`src/extract/react/tool-context.ts`; the getter throws when the tool was not set up): `roi/cards/roi-context.ts` (`rctx`), `map/cards/map-context.ts` (`mctx`). The Agent card keeps its run state in a reducer (`agent/ui/agent-state.ts`) fed by runner callbacks.
 
-## Colormaps page
+## Colormap picker
 
-`src/pages/colormaps.ts` renders `<ColormapsApp/>` (`src/colormaps/app/colormaps-app.tsx`) into `#cmap-root`; `colormaps.html` is unchanged. A render error shows the startup banner (`onUncaughtError`).
-
-- **State**: one reducer, `app/viewer-state.ts` (pure, tested): `{tab, open, compare, compareFlipped, reversed, flipped, stripView, sort, query, filters, reveal, history}`. State and dispatch have separate contexts (`app/viewer-context.ts`). Compare's table sort and the sine pattern stay local. Identify hands a `File` to Recolor through shell state with an id counter, not the reducer.
-- **URL** (`app/use-url-sync.ts`): the link format is `?map=`, `?compare=` and `#tab` (`route.ts`: `parseViewerRoute`, `formatViewerUrl`). Tab changes from code push a history entry; everything else replaces. `hashchange` / `popstate` dispatch `ROUTE_FROM_URL`, which returns the same state when nothing changed, so there are no write loops. `#ref-…` and `#cmap-about` open the footer.
-- **Derived data**: `library-cache.ts` caches `base`, `viewData`, `metrics`, `notesOf` and `sepOf` per map at module level (colormap data never changes, so `memo` is fine here, unlike in extract). `app/ref-numbers.ts` numbers the references once.
-- **Browse** (`app/browse/`): 1063 rows. `browse-model.ts` (pure) builds the tree, sorts and filters. A `Row` gets primitive props only (`name`, `index`, `compared`, `open`, `inline`, `forceBuild`, `dispatch`) and starts as a shell; one shared IntersectionObserver (`use-row-visible.ts`) builds it when it nears the view. Reversed, flips, strip view and the compare cap reach built rows through `RowViewContext`, so a global toggle renders only built rows. Search sets `hidden` on the rows' DOM in a layout effect (React never renders `hidden` on `.cmap-item`), so a keystroke renders no rows. Sections are uncontrolled `<details>`; their open state is restored after a search.
-- **Detail** (`app/detail/`): one `DetailBody`, in the drawer when the window is at least 1200 px wide (`useMediaQuery`), else inline under its row. Folds are kept in a module store (`detail-folds.ts`) because the move remounts the body. Escape closes unless `defaultPrevented`, inside a field or with a popover open; focus returns to the row button (`focus-registry.ts`).
-- **Scroll anchor** (`scroll-anchor.ts` + `app/use-scroll-anchor.ts`): saves the reader's place on scroll; on resize it freezes, flips `wide` with `flushSync`, then re-finds the saved anchor in the new detail and aligns it.
-- **Tabs**: `app/compare/`, `identify/`, `recolor/`, `cvd/`, each a component with its pure model next to it. Shared pieces in `app/shared/`: `Strip`, `ProbeStrip`, `SvgFigure` (wraps the `plots.ts` builders), `FigureInput`, `RatingPills` / `RatingCells`, `TooltipProvider` (one imperative tip element). `map-picker.tsx` is the ARIA combobox also used by the Colorbar card.
+`extract/workspace/cards/map-picker.tsx` is the ARIA combobox of the Colorbar card (search field, strips, *Reversed*).
 
 ## What stays imperative
 
 - Extract: the viewer, overlays and `interact.ts`; the mode, view and status bars (updated on every pointer move); toast, empty state, dropzone and top bar; the results tables (up to 1000 × 1000 cells, hover highlight `td.hl`); the profile plot and the sweep (writes through refs each frame, no notify); the colorbar strip.
-- Colormaps: strip canvases, SVG plots, the tooltip, Compare's drag-reorder and sine canvases, the Recolor and CVD canvases, the scroll-anchor maths.
 
 A component hosts these through a ref and draws in a layout effect. Never let React and imperative code write the same attribute or class of one element.
 
 ## Performance
 
-`npm run perf` (`scripts/perf/run.mjs` + `bench.js`) runs the built pages in headless Chrome (system Chrome, `CHROME_PATH` to override) and prints medians: extract load, an agent batch of 20 actions, 100 keystrokes in `#grid-rows`, undo; colormaps load, Reversed toggle, sort, search and tab switches. `PERF_OUT=<dir>` measures another build, for an A/B against main (`git worktree add <dir> main`, then `vite build --outDir <out>` there). Numbers are only comparable on one machine. The bench relies on `#grid-rows`, `.cmap-row`, `.cmap-th[data-sort]`, `.cmap-search` and the label text "Reversed".
+`npm run perf` (`scripts/perf/run.mjs` + `bench.js`) runs the built pages in headless Chrome (system Chrome, `CHROME_PATH` to override) and prints medians: extract load, an agent batch of 20 actions, 100 keystrokes in `#grid-rows`, undo. `PERF_OUT=<dir>` measures another build, for an A/B against main (`git worktree add <dir> main`, then `vite build --outDir <out>` there). Numbers are only comparable on one machine. The bench relies on `#grid-rows`.
 
 Budget (user decision 2026-10-28): interactions within +10% of main, or within 2 ms when main is under 20 ms; no more long tasks; page load may grow by React's fixed cost only (about 16 ms, 69 KB gzip).
 
@@ -86,13 +77,8 @@ Final A/B (2026-10-29, headless Chrome, ms, medians of 7; main's build vs this b
 | extract agent batch of 20 actions | 80.3 | 84.6 |
 | extract 100 keystrokes in `#grid-rows` | 422.1 | 419.7 |
 | extract undo | 8.1 | 7.7 |
-| colormaps load (loadEventEnd), 1063 rows | 82–85 | 73–78 |
-| colormaps Reversed toggle | 0.1 | 0.5 |
-| colormaps sort click | 17.1 | 16.6 |
-| colormaps search "vir" and clear | 26.6 | 27.2 |
-| colormaps tab switches (Compare, Identify, Recolor, Browse) | 10.1–10.8 | 9.2–9.6 |
 
-Extract counts 11 long tasks against 10 on main, but the total time in long tasks is lower: main runs the figure open and the first agent batch as one 250 ms task, which the faster React build splits in two. Known bench artifact: `tab_cvd` reads ~6 ms over main because the first show's async example load spills into the next runs; measured directly, the example is ready ~49 ms after the switch on both builds.
+Extract counts 11 long tasks against 10 on main, but the total time in long tasks is lower: main runs the figure open and the first agent batch as one 250 ms task, which the faster React build splits in two.
 
 ## Pitfalls
 

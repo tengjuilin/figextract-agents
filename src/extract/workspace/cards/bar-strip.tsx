@@ -1,10 +1,10 @@
 // The sampled colorbar strip under the Colorbar card's source fields: the colors the panel reads, with a mark at
 // each tick. Drawn in a layout effect keyed on what it shows, so a render that changes nothing (a keystroke in
 // another field) draws nothing. Hidden until there is a colorbar or a known colormap.
+
+import { colormapSamples, rgbToHex } from 'colormeris';
 import { useLayoutEffect, useRef } from 'react';
-import { rgbToHex } from '../../../core/color.ts';
 import { colorAtT, pointAtT } from '../../../core/colorbar.ts';
-import { colormapSamples } from '../../../core/colormap-match.ts';
 import { readPixel } from '../../../core/grid.ts';
 import type { ColorbarSample, HeatmapResult, Panel, Point, Rgb, WorkspaceContext } from '../../../types/index.ts';
 import { ticksWithT } from '../../project/project.ts';

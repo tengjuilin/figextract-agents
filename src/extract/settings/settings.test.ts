@@ -100,8 +100,8 @@ test('settings files leave out the key unless asked', () => {
   const withKey = parseSettings(JSON.parse(JSON.stringify(serializeSettings(s, { includeKey: true }))));
   assert.equal(withKey.hasKey, true);
   assert.deepEqual(withKey.settings, s);
-  assert.throws(() => parseSettings({ schema: 'colormeris-project' }), /Not a Colormeris settings file/);
-  assert.throws(() => parseSettings({ schema: 'colormeris-settings', version: 99 }), /newer/);
+  assert.throws(() => parseSettings({ schema: 'figextract-project' }), /Not a FigExtract Agents settings file/);
+  assert.throws(() => parseSettings({ schema: 'figextract-settings', version: 99 }), /newer/);
 });
 
 test('settings zip round-trips', async () => {

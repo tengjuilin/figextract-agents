@@ -1,6 +1,6 @@
 // Map tool, reading colors (pure): the flag bits a value can carry, and the colorbar's samples with a cached
 // color → value reader, shared by the field (extract.ts) and the profiles (profiles.ts).
-import { colorDistance, rgbToLab } from '../../../core/color.ts';
+import { colorDistance, rgbToLab } from 'colormeris';
 import { colorbarSamples, labToT, makeValueFn } from '../../../core/colorbar.ts';
 import type { ColorbarSample, Panel, PanelSettings, PixelImage, Rgb } from '../../../types/index.ts';
 import { ticksWithT } from '../../project/project.ts';

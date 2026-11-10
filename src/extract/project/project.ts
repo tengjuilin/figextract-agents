@@ -1,5 +1,5 @@
+import { cmapData } from 'colormeris';
 import { projectT, SCALES, tickProblem } from '../../core/colorbar.ts';
-import { cmapData } from '../../core/colormap-library.ts';
 import type {
   AxisScale,
   AxisTick,
@@ -30,7 +30,7 @@ export type Raw = any;
 // Project model and its JSON (de)serialization. All coordinates are in the
 // pixel space of the rendered source image (source.width × source.height).
 
-export const SCHEMA = 'colormeris-project';
+export const SCHEMA = 'figextract-project';
 // Version 2: each panel names its tool; version 1 had one tool per project (`kind`).
 export const SCHEMA_VERSION = 2;
 export const APP_VERSION = '0.1.0';

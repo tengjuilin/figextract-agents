@@ -209,7 +209,7 @@ export function setupMapTool(ws: Workspace) {
   ws.addTool({
     kind: 'map',
     label: 'Map',
-    title: 'Colormeris · Map',
+    title: 'FigExtract Agents · Map',
     plotArea: true,
     computeResult,
     resultKey: (panel) => [panel.grid.corners, panel.colorbar, panel.settings, panel.map, panel.scale, !!app.drag],

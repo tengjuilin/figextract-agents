@@ -45,7 +45,7 @@ function setup() {
   return { ws, ui, toasts, applied, changes, downloads };
 }
 const el = (id: string) => document.getElementById(id) as HTMLInputElement & HTMLSelectElement;
-const stored = () => JSON.parse(localStorage.getItem('colormeris.settings') ?? 'null');
+const stored = () => JSON.parse(localStorage.getItem('figextract.settings') ?? 'null');
 
 test('nothing renders until the first open; open shows the dialog on the requested tab', () => {
   const { ui } = setup();
@@ -234,7 +234,7 @@ test('Reset keeps the key; import and export are wired', async () => {
   assert.notDeepEqual(ui.get().hotkeys.grid, ['Z']);
   assert.ok(toasts.includes('Settings reset.'));
   fireEvent.click(el('settings-export'));
-  await waitFor(() => assert.deepEqual(downloads, ['colormeris-settings.zip']));
+  await waitFor(() => assert.deepEqual(downloads, ['figextract-settings.zip']));
   vi.unstubAllGlobals();
 });
 

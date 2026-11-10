@@ -1,8 +1,8 @@
 // findTickLabels: the numbered labels beside a colorbar strip.
 
+import { upperMedian } from 'colormeris';
 import type { Box, PixelImage } from '../../types/index.ts';
 import { readPixel } from '../grid.ts';
-import { upperMedian } from '../stats.ts';
 import { background, clamp, components, differsAt, mean, STRONG, TEXT } from './helpers.ts';
 import { tickMarks } from './tick-marks.ts';
 import type { Component, FrameComp, TickBest, TickLabel, TickLabelsResult } from './types.ts';

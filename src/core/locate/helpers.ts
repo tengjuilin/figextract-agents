@@ -1,8 +1,8 @@
 // Thresholds and pixel tests shared by the locate modules: page background,
 // noise, ink and stroke tests, runs of full lines, connected components.
 
+import { onWhite } from 'colormeris';
 import type { PixelImage, Rgb } from '../../types/index.ts';
-import { onWhite } from '../color.ts';
 import { readPixel } from '../grid.ts';
 import type { Component, PixelTest } from './types.ts';
 

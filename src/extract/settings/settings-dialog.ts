@@ -17,8 +17,8 @@ import { mountSettingsDialog } from './settings-ui.tsx';
 // saved in localStorage at once. The API key is only stored when "Remember" is ticked, otherwise it lasts for
 // this visit.
 
-const STORE = 'colormeris.settings';
-const OLD_AGENT_STORE = 'colormeris.agent'; // before the dialog, the Agent card saved here
+const STORE = 'figextract.settings';
+const OLD_AGENT_STORE = 'figextract.agent'; // before the dialog, the Agent card saved here
 
 const isMac = isMacPlatform(navigator);
 

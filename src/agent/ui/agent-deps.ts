@@ -1,4 +1,4 @@
-import type { ColormerisApi, SettingsUi } from '../../types/index.ts';
+import type { FigExtractApi, SettingsUi } from '../../types/index.ts';
 import type { createAgentRunner } from '../runner.ts';
 
 // What the Agent card (React) needs besides the workspace: the typed API, the runner that drives it and the
@@ -6,7 +6,7 @@ import type { createAgentRunner } from '../runner.ts';
 // (the API does not exist before); the card reads them when a handler runs, never during render.
 
 export interface AgentDeps {
-  api: ColormerisApi;
+  api: FigExtractApi;
   runner: Pick<ReturnType<typeof createAgentRunner>, 'run'>;
   settingsUi: Pick<SettingsUi, 'save' | 'open'>;
 }

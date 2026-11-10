@@ -1,9 +1,9 @@
 // Line measures around a rough box and frame fitting, shared by snapBlock and
 // snapEdges.
 
+import { upperMedian } from 'colormeris';
 import type { Box, PixelImage, Rgb } from '../../types/index.ts';
 import { readPixel } from '../grid.ts';
-import { upperMedian } from '../stats.ts';
 import {
   background,
   clamp,

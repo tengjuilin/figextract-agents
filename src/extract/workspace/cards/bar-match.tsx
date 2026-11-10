@@ -1,10 +1,10 @@
 // Which known colormap the calibrated colorbar looks like (core/colormap-match.ts), shown under the strip.
 // Matching takes about 30 ms (identifyColorbar with `within` skips maps that cannot win), waits until the bar
 // stops moving and is cached per bar position; the tick values only decide the direction. The result goes into a module cache and a state bump re-renders the card.
+
+import { cmapData, suggestColormap } from 'colormeris';
 import { useEffect, useState } from 'react';
 import { makeValueFn, sampleColorbar } from '../../../core/colorbar.ts';
-import { cmapData } from '../../../core/colormap-library.ts';
-import { suggestColormap } from '../../../core/colormap-match.ts';
 import type { Panel, WorkspaceContext } from '../../../types/index.ts';
 import { ticksWithT } from '../../project/project.ts';
 
@@ -87,17 +87,8 @@ export function BarMatch({
         </>
       )}
       {m.level !== 'none' && m.same.length ? `Same colors: ${m.same.map(flip).join(', ')}. ` : null}
-      <a
-        href={`colormaps.html?map=${encodeURIComponent(m.name)}#browse`}
-        target="_blank"
-        rel="noopener"
-        title="Open this colormap in the colormap viewer"
-      >
-        View
-      </a>
       {m.level !== 'none' ? (
         <>
-          {' · '}
           {/* Use the matched map's own colors instead of the sampled bar: same direction as the bar
               (m.reversed is start → end), ticks unchanged. */}
           <button

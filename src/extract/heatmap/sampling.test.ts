@@ -1,7 +1,6 @@
 import assert from 'node:assert/strict';
+import { cmapData, parseHexColors } from 'colormeris';
 import { test } from 'vitest';
-import { cmapData } from '../../core/colormap-library.ts';
-import { parseHexColors } from '../../core/cvd.ts';
 import { rectCorners } from '../../core/grid.ts';
 import { cmap, makeImage, paintColorbar, paintDots, paintHeatmap, setPixel, VIRIDISH } from '../../testing/helpers.ts';
 import type { ColormapRef, Corners, HeatmapResult, PixelImage, Rgb } from '../../types/index.ts';

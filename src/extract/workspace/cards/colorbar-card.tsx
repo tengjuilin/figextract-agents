@@ -3,7 +3,6 @@
 // picker); with a known colormap the bar line is optional and ticks can be typed as a position along the map.
 // Read in render, write in handlers that end in w.commit / w.changed (docs/react.md, "The card pattern"). Moving the focus to a
 // new tick goes through tick-focus.ts; the sampled strip and the reference match are their own components.
-import { MapPicker } from '../../../colormaps/map-picker.tsx';
 import type { BarTickMode, ColorbarScale } from '../../../types/index.ts';
 import {
   BoundInput,
@@ -24,6 +23,7 @@ import { notify } from '../store.ts';
 import { BarMatch, lowAtStartOf, useBarMatch } from './bar-match.tsx';
 import { BarStrip } from './bar-strip.tsx';
 import { chooseColormap, placeColorbarEnds, toggleTickMode, typeTick } from './colorbar-actions.ts';
+import { MapPicker } from './map-picker.tsx';
 import { TickTable } from './tick-table.tsx';
 
 const SCALES: { value: ColorbarScale; label: string; title?: string }[] = [

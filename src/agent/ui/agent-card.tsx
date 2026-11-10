@@ -8,7 +8,7 @@ import { useCallback, useEffect, useLayoutEffect, useReducer, useRef, useState }
 import { cellSamplePolygon } from '../../core/grid.ts';
 import { useSectionVisible, useWorkspace } from '../../extract/react/use-workspace.ts';
 import { store } from '../../extract/workspace/store.ts';
-import type { AgentSettings, ColormerisApi, Panel, Question, SettingsUi, Workspace } from '../../types/index.ts';
+import type { AgentSettings, FigExtractApi, Panel, Question, SettingsUi, Workspace } from '../../types/index.ts';
 import { Badge, BoundInput, BoundSelect, Btn, Field, Fields, Hint, useSettings } from '../../ui/index.ts';
 import { DEFAULT_DECISION_MODEL } from '../decide.ts';
 import { DEFAULT_LLM, parsePages } from '../llm.ts';
@@ -332,7 +332,7 @@ export function AgentCard() {
 }
 
 /** Give the card what it needs besides the workspace; called once at startup, after the cards are mounted. */
-export function setupAgentPanel(ws: Workspace, api: ColormerisApi, settingsUi: SettingsUi) {
+export function setupAgentPanel(ws: Workspace, api: FigExtractApi, settingsUi: SettingsUi) {
   const runner = createAgentRunner(ws, api);
   setAgentDeps({ api, runner, settingsUi });
   return { runner };
